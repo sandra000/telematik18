@@ -1,0 +1,6 @@
+numpy
+matplotlib==2.1.2
+Cython
+pandas
+sqlite3
+sqlalchemy
