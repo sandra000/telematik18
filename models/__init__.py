@@ -1,9 +1,14 @@
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
-import base
+
+from .historicalData import Base
+from .exchangeRate import Base
+from .orderBook import Base
+from .trade import Base
+from .base import Base
 
 #engine = create_engine(os.environ['DATABASE_URL'])
 engine = create_engine('sqlite:///crypto.db')
 
 Session = sessionmaker(bind=engine)
-base.Base.metadata.create_all(engine)
+Base.metadata.create_all(engine)
