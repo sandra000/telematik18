@@ -3,5 +3,5 @@
 from ui.mainForm import SeaofBTCapp
 
 app = SeaofBTCapp()
-app.geometry("1280x720")  # size of the window
+app.geometry("1280x720")
 app.mainloop()
