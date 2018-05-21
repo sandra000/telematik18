@@ -1,18 +1,16 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Float, Boolean
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float
 from sqlalchemy.orm import relationship
+from .base import Base
 from .cryptocurrency import Cryptocurrency
 from .mark import Mark
-from .base import Base
 
 
-class Orderbook(Base):
-    __tablename__ = 'orderbooks'
+class Exchange(Base):
+    __tablename__ = 'exchanges'
 
     id = Column(Integer, primary_key=True)
-    time = Column(DateTime)
-    price = Column(Float)
-    size = Column(Float)
-    type = Column(Boolean) # asks or bids, true === ask false == bids
+    time_exchange = Column(DateTime)
+    rate = Column(Float)
     base_currency_id = Column(Integer, ForeignKey('cryptocurrencies.id'))
     quote_currency_id = Column(Integer, ForeignKey('cryptocurrencies.id'))
     mark_id = Column(Integer, ForeignKey('marks.id'))
