@@ -1,6 +1,6 @@
-#dont name the file tkinter.py, it does not work
 import tkinter as tk
 from tkinter import ttk #css for tkinter
+import sqlite3
 
 import matplotlib
 matplotlib.use("TkAgg")
@@ -20,6 +20,10 @@ import json
 
 import pandas as pd
 import numpy as np
+
+import models
+
+session = models.Session()
 
 #style.use("ggplot")
 

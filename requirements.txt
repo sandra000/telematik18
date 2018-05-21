@@ -1,6 +1,5 @@
 numpy
 matplotlib==2.1.2
 Cython
-pandas
-sqlite3
+pandas==0.23.0
 sqlalchemy
