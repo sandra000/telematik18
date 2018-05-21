@@ -48,7 +48,7 @@ def animate(i, a):
 
                         # plotting live data from a website
                         dataLink = "https://api.bitfinex.com/v1/trades/BTCUSD?limit_trades=2000"
-                        data = urllib.request.urlopen(dataLink)
+                        data = urllib.request.urlopen(dataLink, cafile='cacert.pem')
                         data = data.read().decode("utf-8")  # data comes in bytes; we decode it to utf-8
                         data = json.loads(data)  # data = data["btc_usd"] is useless for us
 
