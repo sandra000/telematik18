@@ -1,5 +1,6 @@
 numpy
 matplotlib==2.1.2
+python3-tk
 Cython
 pandas==0.23.0
 sqlalchemy

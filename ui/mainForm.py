@@ -522,12 +522,12 @@ class PageOne(tk.Frame):
         button2 = tk.Button(self, text="Page Two", command=lambda: controller.show_frame(PageTwo))
         button2.pack()
 
-f = plt.figure()
-
 class BTCe_Page(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        f = plt.figure()
+
         label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
 
@@ -544,6 +544,10 @@ class BTCe_Page(tk.Frame):
         toolbar.update()
         canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
+        a = f.add_subplot(111)
+        ani = animation.FuncAnimation(f, animate, fargs=[a],
+                                      interval=1000)
+
 
 app = SeaofBTCapp()
 app.geometry("1280x720")  # size of the window
@@ -553,8 +557,5 @@ app.geometry("1280x720")  # size of the window
 # f = Figure(figsize=(10,6), dpi=100)
 
 
-a = f.add_subplot(111)
-ani = animation.FuncAnimation(f, animate, fargs=[a],
-                              interval=1000)  # run animate every 2 seconds; beware: while the app is updating, the app becomes frozen
 app.mainloop()
 # mainloop() is a tkinter method to "run" the app
