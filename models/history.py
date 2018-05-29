@@ -17,11 +17,14 @@ class History(Base):
     last_ask_size = Column(Float)
     base_currency_id = Column(Integer, ForeignKey('cryptocurrencies.id'))
     quote_currency_id = Column(Integer, ForeignKey('cryptocurrencies.id'))
-    mark_id = Column(Integer, ForeignKey('marks.id'))
+    mark_id = Column(Integer, ForeignKey('marks.id'), nullable=True)
 
     base_currency = relationship(Cryptocurrency, primaryjoin=base_currency_id == Cryptocurrency.id)
     quote_currency = relationship(Cryptocurrency, primaryjoin=quote_currency_id == Cryptocurrency.id)
-    mark = relationship(Mark, primaryjoin=mark_id == Mark.id)
+    #mark = relationship(Mark)
 
     def __init__(self, name):
         self.name = name
+
+    def __repr__(self):
+        return '<History: {}>'.format(self.id)

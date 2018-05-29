@@ -12,8 +12,10 @@ class Mark(Base):
     api_url = Column(String(250), nullable=False)
     website = Column(String(250), nullable=True)
     histories = relationship("History", backref="mark")
-    currency = relationship('Mark_Cryptocurrency', backref='mark',
-                         primaryjoin=id == Mark_Cryptocurrency.mark_id)
+    currency = relationship('Mark_Cryptocurrency', backref='mark', primaryjoin=id == Mark_Cryptocurrency.mark_id)
 
     def __init__(self, name):
         self.name = name
+
+    def __repr__(self):
+        return '<Mark: {}>'.format(self.id)

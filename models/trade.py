@@ -24,3 +24,6 @@ class Trade(Base):
 
     def __init__(self, name):
         self.name = name
+
+    def __repr__(self):
+        return '<Trade: {}>'.format(self.id)

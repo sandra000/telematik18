@@ -1,7 +1,7 @@
 #import from coinapi
 import models
-from coinapi_v1 import CoinAPIv1
-import datetime
+from api.coinapi_v1 import CoinAPIv1
+
 
 def getSymbol(SymbolID, mark_id=-1,base_cryptocurrency_id=-1, quote_cryptocurrency_id=-1):
     #result=session.query(models.Cryptocurrency).filter(models.Cryptocurrency.id.in_([id])).all()
