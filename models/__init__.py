@@ -7,7 +7,7 @@ from .history import History
 from .exchange import Exchange
 from .orderBook import Orderbook
 from .trade import Trade
-from .base import Base
+from .symbol import Symbol
 
 # engine = create_engine(os.environ['DATABASE_URL'])
 engine = create_engine('sqlite:///crypto.db')
