@@ -3,9 +3,20 @@ import numpy as np
 
 session = models.Session()
 
+
 class History(object):
+
     def getHistory(self, session):
         session.query(models.History).get({"x": 5})
+
+    def get_correlation(self):
+        session = models.Session()
+        symbol_global_id = 'BITSTAMP_SPOT_BTC_USD'
+        symbols = session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_global_id).all()
+        if len(symbols) > 0:
+            symbol_id = symbols[0].id
+            result = session.query(models.History).filter(models.History.symbol_id == symbol_id).all()
+            return result
 
 def animate(i, a):
     # 1. get data
@@ -30,3 +41,6 @@ def animate(i, a):
     #diff curr have diff time???
     session.commit()
     return True
+
+tar = History()
+test = tar.get_correlation()
