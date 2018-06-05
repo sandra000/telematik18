@@ -4,3 +4,5 @@ python3-tk
 Cython
 pandas==0.23.0
 sqlalchemy
+certifi
+python-dateutil
