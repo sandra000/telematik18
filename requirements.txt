@@ -3,3 +3,5 @@ matplotlib==2.1.2
 Cython
 pandas==0.23.0
 sqlalchemy
+certifi
+python-dateutil
