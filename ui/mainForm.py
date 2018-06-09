@@ -18,6 +18,7 @@ import numpy as np
 
 import models
 from ui import animate
+import api
 session = models.Session()
 
 # style.use("ggplot")
@@ -451,12 +452,16 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         # puts the menubar inside the container
         # puts the File submenu inside the menubar; tearoff means you can detach the menu
         menubar = tk.Menu(container)
+
         filemenu = tk.Menu(menubar, tearoff=0)
         filemenu.add_command(label="Save settings", command=lambda: popupmsg("Not supported just yet!"))
-        filemenu.add_separator()  # adds a line between the menu options
+        filemenu.add_separator()
         filemenu.add_command(label="Exit", command=quit)
-        # 2. We show the menubar (frontend)
         menubar.add_cascade(label="File", menu=filemenu)
+
+        api_menu = tk.Menu(menubar, tearoff=1)
+        api_menu.add_command(label="Import data", command=lambda: api.main_import())
+        menubar.add_cascade(label="API", menu=api_menu)
 
         # submenu Exchange
         exchangeChoice = tk.Menu(menubar, tearoff=1)
@@ -467,54 +472,54 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         exchangeChoice.add_command(label="Huobi", command=lambda: changeExchange("Huobi", "huobi"))
         menubar.add_cascade(label="Exchange", menu=exchangeChoice)
 
-        # submenu Data Time Frame Selection
-        dataTF = tk.Menu(menubar, tearoff=1)
-        dataTF.add_cascade(label="Tick", command=lambda: changeTimeFrame('tick'))
-        dataTF.add_cascade(label="1 Day", command=lambda: changeTimeFrame('1d'))
-        dataTF.add_cascade(label="3 Day", command=lambda: changeTimeFrame('3d'))
-        dataTF.add_cascade(label="1 Week", command=lambda: changeTimeFrame('7d'))
-        menubar.add_cascade(label="Data Time Frame", menu=dataTF)
-
-        OHLCI = tk.Menu(menubar, tearoff=1)
-        OHLCI.add_command(label="Tick", command=lambda: changeTimeFrame('tick'))
-        OHLCI.add_command(label="1 Minute", command=lambda: changeSampleSize('1Min', 0.0005))
-        OHLCI.add_command(label="5 Minute", command=lambda: changeSampleSize('5Min', 0.003))
-        OHLCI.add_command(label="15 Minute", command=lambda: changeSampleSize('15Min', 0.008))
-        OHLCI.add_command(label="30 Minute", command=lambda: changeSampleSize('30Min', 0.016))
-        OHLCI.add_command(label="1 Hour", command=lambda: changeSampleSize('1H', 0.032))
-        OHLCI.add_command(label="3 Hour", command=lambda: changeSampleSize('3H', 0.096))
-        menubar.add_cascade(label="OHLC Interval", menu=OHLCI)
-
-        topIndi = tk.Menu(menubar, tearoff=1)
-        topIndi.add_command(label="None", command=lambda: addTopIndicator("none"))
-        topIndi.add_command(label="RSI", command=lambda: addTopIndicator("rsi"))
-        topIndi.add_command(label="MACD", command=lambda: addTopIndicator("macd"))
-        menubar.add_cascade(label="Top Indicator", menu=topIndi)
-
-        mainIndi = tk.Menu(menubar, tearoff=1)
-        mainIndi.add_command(label="None", command=lambda: addMiddleIndicator("none"))
-        mainIndi.add_command(label="SMA", command=lambda: addMiddleIndicator("sma"))
-        mainIndi.add_command(label="EMA", command=lambda: addMiddleIndicator("ema"))
-        menubar.add_cascade(label="Main Indicator", menu=mainIndi)
-
-        bottomIndi = tk.Menu(menubar, tearoff=1)
-        bottomIndi.add_command(label="None", command=lambda: addBottomIndicator("none"))
-        bottomIndi.add_command(label="RSI", command=lambda: addBottomIndicator("rsi"))
-        bottomIndi.add_command(label="MACD", command=lambda: addBottomIndicator("macd"))
-        menubar.add_cascade(label="Bottom Indicator", menu=bottomIndi)
-
-        tradeButton = tk.Menu(menubar, tearoff=1)
-        tradeButton.add_command(label="Manual Trading", command=lambda: popupmsg("Not live yet"))
-        tradeButton.add_command(label="Automated Trading", command=lambda: popupmsg("Not live yet"))
-        tradeButton.add_separator()
-
-        tradeButton.add_command(label="Quick Buy", command=lambda: popupmsg("Not live yet"))
-        tradeButton.add_command(label="Quick Sell", command=lambda: popupmsg("Not live yet"))
-        tradeButton.add_separator()
-
-        tradeButton.add_command(label="Setup Quick Buy/Sell", command=lambda: popupmsg("Not live yet"))
-
-        menubar.add_cascade(label="Trading", menu=tradeButton)
+        # # submenu Data Time Frame Selection
+        # dataTF = tk.Menu(menubar, tearoff=1)
+        # dataTF.add_cascade(label="Tick", command=lambda: changeTimeFrame('tick'))
+        # dataTF.add_cascade(label="1 Day", command=lambda: changeTimeFrame('1d'))
+        # dataTF.add_cascade(label="3 Day", command=lambda: changeTimeFrame('3d'))
+        # dataTF.add_cascade(label="1 Week", command=lambda: changeTimeFrame('7d'))
+        # menubar.add_cascade(label="Data Time Frame", menu=dataTF)
+        #
+        # OHLCI = tk.Menu(menubar, tearoff=1)
+        # OHLCI.add_command(label="Tick", command=lambda: changeTimeFrame('tick'))
+        # OHLCI.add_command(label="1 Minute", command=lambda: changeSampleSize('1Min', 0.0005))
+        # OHLCI.add_command(label="5 Minute", command=lambda: changeSampleSize('5Min', 0.003))
+        # OHLCI.add_command(label="15 Minute", command=lambda: changeSampleSize('15Min', 0.008))
+        # OHLCI.add_command(label="30 Minute", command=lambda: changeSampleSize('30Min', 0.016))
+        # OHLCI.add_command(label="1 Hour", command=lambda: changeSampleSize('1H', 0.032))
+        # OHLCI.add_command(label="3 Hour", command=lambda: changeSampleSize('3H', 0.096))
+        # menubar.add_cascade(label="OHLC Interval", menu=OHLCI)
+        #
+        # topIndi = tk.Menu(menubar, tearoff=1)
+        # topIndi.add_command(label="None", command=lambda: addTopIndicator("none"))
+        # topIndi.add_command(label="RSI", command=lambda: addTopIndicator("rsi"))
+        # topIndi.add_command(label="MACD", command=lambda: addTopIndicator("macd"))
+        # menubar.add_cascade(label="Top Indicator", menu=topIndi)
+        #
+        # mainIndi = tk.Menu(menubar, tearoff=1)
+        # mainIndi.add_command(label="None", command=lambda: addMiddleIndicator("none"))
+        # mainIndi.add_command(label="SMA", command=lambda: addMiddleIndicator("sma"))
+        # mainIndi.add_command(label="EMA", command=lambda: addMiddleIndicator("ema"))
+        # menubar.add_cascade(label="Main Indicator", menu=mainIndi)
+        #
+        # bottomIndi = tk.Menu(menubar, tearoff=1)
+        # bottomIndi.add_command(label="None", command=lambda: addBottomIndicator("none"))
+        # bottomIndi.add_command(label="RSI", command=lambda: addBottomIndicator("rsi"))
+        # bottomIndi.add_command(label="MACD", command=lambda: addBottomIndicator("macd"))
+        # menubar.add_cascade(label="Bottom Indicator", menu=bottomIndi)
+        #
+        # tradeButton = tk.Menu(menubar, tearoff=1)
+        # tradeButton.add_command(label="Manual Trading", command=lambda: popupmsg("Not live yet"))
+        # tradeButton.add_command(label="Automated Trading", command=lambda: popupmsg("Not live yet"))
+        # tradeButton.add_separator()
+        #
+        # tradeButton.add_command(label="Quick Buy", command=lambda: popupmsg("Not live yet"))
+        # tradeButton.add_command(label="Quick Sell", command=lambda: popupmsg("Not live yet"))
+        # tradeButton.add_separator()
+        #
+        # tradeButton.add_command(label="Setup Quick Buy/Sell", command=lambda: popupmsg("Not live yet"))
+        #
+        # menubar.add_cascade(label="Trading", menu=tradeButton)
 
         startStop = tk.Menu(menubar, tearoff=1)
         startStop.add_command(label="Resume", command=lambda: loadChart('start'))
