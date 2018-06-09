@@ -1,8 +1,6 @@
 import tkinter as tk
 from tkinter import ttk #css for tkinter
 
-import matplotlib
-matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 # FigureCanvasTkAgg allows us to draw matplotlib to a canvas with TkAgg
 # NavigationToolbar2TkAgg is the small toolbar in every matplotlib graph
@@ -325,36 +323,40 @@ def addMiddleIndicator(what):
     else:
         middleIndicator = "none"
 
+
 def changeTimeFrame(tf):
-  global dataPace
-  global datCounter
-  if tf == "7d" and resampleSize=="1Min":
-    popupmsg("Too much data chosen, choose a smaller timeframe")
-  else:
-    dataPace = tf
-    datCounter = 9000
+    global dataPace
+    global datCounter
+    if tf == "7d" and resampleSize == "1Min":
+        popupmsg("Too much data chosen, choose a smaller timeframe")
+    else:
+        dataPace = tf
+        datCounter = 9000
+
 
 def changeSampleSize(size, width):
-  global resampleSize
-  global datCounter
-  global candleWidth
-  if dataPace == "7d" and resampleSize=="1Min":
-    popupmsg("Too much data chosen, choose a smaller timeframe")
-  elif dataPace == "tick":
-    popupmsg("You are currently viewing tick data, not OHLC.")
-  else:
-    resampleSize = sizeDat
+    global resampleSize
+    global datCounter
+    global candleWidth
+    if dataPace == "7d" and resampleSize == "1Min":
+        popupmsg("Too much data chosen, choose a smaller timeframe")
+    elif dataPace == "tick":
+        popupmsg("You are currently viewing tick data, not OHLC.")
+    # else:
+    # #TODO: we dont use this
+    #     resampleSize = sizeDat
+    #     datCounter = 9000
+    #     candleWidth = width
+
+
+def changeExchange(toWhat, pn):  # pn is the program name
+    global exchange  # we global the variables so we are able to modify them
+    global datCounter
+    global programName
+
+    exchange = toWhat
     datCounter = 9000
-    candleWidth = width
-
-def changeExchange(toWhat, pn): #pn is the program name
-  global exchange  #we global the variables so we are able to modify them
-  global datCounter
-  global programName
-
-  exchange = toWhat
-  datCounter = 9000
-  programName = pn
+    programName = pn
 
 def popupmsg(msg):
     popup = tk.Tk() #creates an empty window
@@ -365,9 +367,67 @@ def popupmsg(msg):
     B1.pack()
     popup.mainloop()
 
+class StartPage(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)  # StartPages's parent is the SeaofBTCapp class
+        label = tk.Label(self, text="Cryptocurrencies \nTrading Analyse", font=LARGE_FONT)  # like the JavaFX label
+        label.pack(pady=10, padx=10)  # if you have 1,2 or 3 elements, use pack. Otherwise, use grid()
+        button1 = tk.Button(self, text="Agree", command=lambda: controller.show_frame(BTCe_Page))
+        # dont pass the function directly to command as command=qf("text").
+        # The function will be executed once and not again.
+        # To be able to run the function every time the button is pressed, use lambda:
+        button1.pack()
+        button2 = tk.Button(self, text="Disagree", command=quit)
+        button2.pack()
+
+
+# reference to how to create a new page
+class PageOne(tk.Frame):
+    # sometimes you program the whole page under the __init__ function
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        label = tk.Label(self, text="Page One", font=LARGE_FONT)
+        label.pack(pady=10, padx=10)
+
+        button1 = tk.Button(self, text="Home", command=lambda: controller.show_frame(StartPage))
+        button1.pack()
+
+        # #TODO: we dont use this
+        # button2 = tk.Button(self, text="Page Two", command=lambda: controller.show_frame(PageTwo))
+        # button2.pack()
+
+
+
+class BTCe_Page(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
+        label.pack(pady=10, padx=10)
+
+        button1 = tk.Button(self, text="Home", command=lambda: controller.show_frame(StartPage))
+        button1.pack()
+
+        ### add a matplotlib graph to the page
+        canvas = FigureCanvasTkAgg(controller.f, self)
+        canvas.show()
+        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+
+        # add matplotlib toolbar (zoom, home, etc)
+        toolbar = NavigationToolbar2TkAgg(canvas, self)
+        toolbar.update()
+        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        # run animate every 2 seconds; beware: while the app is updating, the app becomes frozen
+
 class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.Tk
+    # main controller
+    f = plt.figure()
 
     def __init__(self, *args, **kwargs):
+
+
         # when we call upon the class, this initalize method WILL ALWAYS RUN
         # self is always implied as the first argument
         # *args is any number of variables
@@ -485,6 +545,9 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
             # if you dont use a row, default is the first unused row in the grid
             # http://effbot.org/tkinterbook/grid.htm for more grid() options
 
+        a = self.f.add_subplot(111)
+        ani = animation.FuncAnimation(self.f, animate, fargs=[a], interval=1000)
+        self.f.canvas.show()
         self.show_frame(StartPage)
 
     def show_frame(self, cont):
@@ -493,68 +556,7 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         # tkraise() raises frame to the front
 
 
-class StartPage(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)  # StartPages's parent is the SeaofBTCapp class
-        label = tk.Label(self, text="Cryptocurrencies \nTrading Analyse", font=LARGE_FONT)  # like the JavaFX label
-        label.pack(pady=10, padx=10)  # if you have 1,2 or 3 elements, use pack. Otherwise, use grid()
-        button1 = tk.Button(self, text="Agree", command=lambda: controller.show_frame(BTCe_Page))
-        # dont pass the function directly to command as command=qf("text").
-        # The function will be executed once and not again.
-        # To be able to run the function every time the button is pressed, use lambda:
-        button1.pack()
-        button2 = tk.Button(self, text="Disagree", command=quit)
-        button2.pack()
-
-
-# reference to how to create a new page
-class PageOne(tk.Frame):
-    # sometimes you program the whole page under the __init__ function
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Page One", font=LARGE_FONT)
-        label.pack(pady=10, padx=10)
-
-        button1 = tk.Button(self, text="Home", command=lambda: controller.show_frame(StartPage))
-        button1.pack()
-
-        button2 = tk.Button(self, text="Page Two", command=lambda: controller.show_frame(PageTwo))
-        button2.pack()
-
-f = plt.figure()
-
-class BTCe_Page(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
-        label.pack(pady=10, padx=10)
-
-        button1 = tk.Button(self, text="Home", command=lambda: controller.show_frame(StartPage))
-        button1.pack()
-
-        ### add a matplotlib graph to the page
-        canvas = FigureCanvasTkAgg(f, self)
-        canvas.show()
-        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-
-        # add matplotlib toolbar (zoom, home, etc)
-        toolbar = NavigationToolbar2TkAgg(canvas, self)
-        toolbar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-
 app = SeaofBTCapp()
-app.geometry("1280x720")  # size of the window
-
-
-# create a live matplotlib graph. Canvas:
-# f = Figure(figsize=(10,6), dpi=100)
-
-
-a = f.add_subplot(111)
-ani = animation.FuncAnimation(f, animate, fargs=[a],
-                              interval=1000)  # run animate every 2 seconds; beware: while the app is updating, the app becomes frozen
+app.geometry("1280x720")
 app.mainloop()
-# mainloop() is a tkinter method to "run" the app
+
