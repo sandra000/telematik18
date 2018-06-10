@@ -11,6 +11,13 @@ def main_import():
         #TODO: chagne it to findOne
         result = session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_id).all()
         if len(result) > 0:
+            return result[0]
+        return -1
+
+    def get_symbol_id(symbol_id):
+        #TODO: chagne it to findOne
+        result = session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_id).all()
+        if len(result) > 0:
             return result[0].id
         return -1
 
@@ -61,12 +68,10 @@ def main_import():
             session.commit()
             return True
 
-
-    def insert_history(ohlcv, symbol):
+    def insert_history(ohlcv, symbol, base_currency_id, quote_currency_id):
         #TODO: do this get_cryptocurrency_id only one time id use symbols
         # TODO: flush date for the first
         # now only for BITSTAMP_SPOT_BTC_USD
-        symbol_id = get_symbol(symbol)
 
         ohlcv_new = models.History()
         ohlcv_new.start_time_exchange = dateutil.parser.parse(ohlcv['time_period_start'])
@@ -76,9 +81,9 @@ def main_import():
         ohlcv_new.ask_size = ohlcv['volume_traded']
         ohlcv_new.ask_price_high = ohlcv['price_high']
         ohlcv_new.ask_price_low = ohlcv['price_low']
-        ohlcv_new.base_currency_id = get_cryptocurrency_id('BTC')
-        ohlcv_new.quote_currency_id = get_cryptocurrency_id('USD')
-        ohlcv_new.symbol_id = symbol_id
+        ohlcv_new.base_currency_id = base_currency_id
+        ohlcv_new.quote_currency_id = quote_currency_id
+        ohlcv_new.symbol_id = symbol
         #mark_id =
         session.add(ohlcv_new)
         session.commit()
@@ -108,7 +113,7 @@ def main_import():
         session.add(tr)
     #   session.commit()
 
-    def insertTrade(time, price, size, type, base_cur_id, quote_cur_id, market_id):
+    def insert_orderbook(time, price, size, type, base_cur_id, quote_cur_id, market_id):
         tr = models.Orderbook(name)
         tr.time = time
         tr.price = price
@@ -118,54 +123,76 @@ def main_import():
         tr.quote_cur_id = quote_cur_id
         tr.market_id = market_id
         session.add(tr)
-    #   session.commit()
+    #session.commit()
 
-    session = models.Session()
-    api_key = 'E696601D-F684-4237-A4DC-E3BF94A959D2'
+    def update_exchanges(api):
+        exchanges = api.metadata_list_exchanges()
 
-    api = CoinAPIv1(api_key)
-    exchanges = api.metadata_list_exchanges()
-
-    importBaseData = 1
-
-    if (importBaseData > 0):
+        # Start of import
         print('Import Exchanges (Markets)')
         for exchange in exchanges:
             insert_market(exchange['name'], 'coinapi', exchange['website'], exchange['exchange_id'])
 
+    def update_currencies(api):
         assets = api.metadata_list_assets()
         print('import Assets (Currencies)')
         for asset in assets:
             insert_cryptocurrency(asset['name'], asset['asset_id'])
 
+    def update_symbols(api):
         symbols = api.metadata_list_symbols()
         print('import Symbols (Currency-Pairs/Market)')
-        #TODO Batch insert
+        # TODO Batch insert
         for symbol in symbols:
-           insert_symbol(symbol['symbol_id'], symbol['exchange_id'], symbol['asset_id_base'], symbol['asset_id_quote'])
+            if (symbol['symbol_type'] == 'SPOT'):
+                insert_symbol(symbol['symbol_id'], symbol['exchange_id'], symbol['asset_id_base'],
+                              symbol['asset_id_quote'])
 
-           if (symbol['symbol_type'] == 'FUTURES'):
-               print('Future delivery time: %s' % symbol['future_delivery_time'])
+            if (symbol['symbol_type'] == 'FUTURES'):
+                print('Future delivery time: %s' % symbol['future_delivery_time'])
 
-           if (symbol['symbol_type'] == 'OPTION'):
-               print('Option type is call: %s' % symbol['option_type_is_call'])
-               print('Option strike price: %s' % symbol['option_strike_price'])
-               print('Option contract unit: %s' % symbol['option_contract_unit'])
-               print('Option exercise style: %s' % symbol['option_exercise_style'])
-               print('Option expiration time: %s' % symbol['option_expiration_time'])
+            if (symbol['symbol_type'] == 'OPTION'):
+                print('Option type is call: %s' % symbol['option_type_is_call'])
+                print('Option strike price: %s' % symbol['option_strike_price'])
+                print('Option contract unit: %s' % symbol['option_contract_unit'])
+                print('Option exercise style: %s' % symbol['option_exercise_style'])
+                print('Option expiration time: %s' % symbol['option_expiration_time'])
 
+    def update_OHCL_histories(api, symbol):
         start_of_2018 = date(2018, 1, 1).isoformat()
         date_now = date.today().isoformat()
-        marketID = get_market_id_by_name('BITSTAMP')
-        ohlcv_historical = api.ohlcv_historical_data('BITSTAMP_SPOT_BTC_USD', {
+        #marketID = get_market_id_by_name('BITSTAMP')
+
+        symbol_from_db = get_symbol(symbol)
+        symbol_id = symbol_from_db.id
+        base_currency_id = symbol_from_db.base_cryptocurrency_id
+        quote_currency_id = symbol_from_db.quote_cryptocurrency_id
+        ohlcv_historical = api.ohlcv_historical_data(symbol, {
             'period_id': '1DAY',
             'time_start': start_of_2018,
             'time_end': date_now,
             'limit': 10000
         })
         for ohlcv in ohlcv_historical:
-            insert_history(ohlcv, 'BITSTAMP_SPOT_BTC_USD')
+            insert_history(ohlcv, symbol_id, base_currency_id, quote_currency_id)
 
+    #Entrypoint
+    session = models.Session()
+    api_key = 'E696601D-F684-4237-A4DC-E3BF94A959D2'
+
+    coin_api = CoinAPIv1(api_key)
+
+    #update_exchanges(coin_api)
+    #update_currencies(coin_api)
+    #update_symbols(coin_api)
+    update_OHCL_histories(coin_api, 'BITSTAMP_SPOT_BTC_USD')
+    update_OHCL_histories(coin_api, 'BITSTAMP_SPOT_ETH_USD')
+    update_OHCL_histories(coin_api, 'BITSTAMP_SPOT_LTC_USD')
+    update_OHCL_histories(coin_api, 'BITSTAMP_SPOT_XRP_USD')
+    update_OHCL_histories(coin_api, 'KRAKEN_SPOT_ZEC_USD')
+    update_OHCL_histories(coin_api, 'KRAKEN_SPOT_BTC_USD')
+    update_OHCL_histories(coin_api, 'KRAKEN_SPOT_DASH_USD')
+    return True
         # latest_trades = api.trades_latest_data_all()
         #
         # for data in latest_trades:

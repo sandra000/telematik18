@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk #css for tkinter
+from tkinter import messagebox
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 # FigureCanvasTkAgg allows us to draw matplotlib to a canvas with TkAgg
@@ -19,6 +20,7 @@ import numpy as np
 import models
 from ui import animate
 import api
+
 session = models.Session()
 
 # style.use("ggplot")
@@ -422,6 +424,13 @@ class BTCe_Page(tk.Frame):
 
         # run animate every 2 seconds; beware: while the app is updating, the app becomes frozen
 
+
+def run_main_import():
+    result = api.main_import()
+    if result:
+        messagebox.showinfo("Result", "Done")
+
+
 class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.Tk
     # main controller
     f = plt.figure()
@@ -460,7 +469,7 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         menubar.add_cascade(label="File", menu=filemenu)
 
         api_menu = tk.Menu(menubar, tearoff=1)
-        api_menu.add_command(label="Import data", command=lambda: api.main_import())
+        api_menu.add_command(label="Import data", command=lambda: run_main_import())
         menubar.add_cascade(label="API", menu=api_menu)
 
         # submenu Exchange
@@ -551,7 +560,8 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
             # http://effbot.org/tkinterbook/grid.htm for more grid() options
 
         a = self.f.add_subplot(111)
-        ani = animation.FuncAnimation(self.f, animate, fargs=[a], interval=1000)
+        # THIS is life animation
+        ##ani = animation.FuncAnimation(self.f, animate, fargs=[a], interval=1000)
         self.f.canvas.show()
         self.show_frame(StartPage)
 
