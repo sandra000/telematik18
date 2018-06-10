@@ -5,27 +5,11 @@ from tkinter import messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 # FigureCanvasTkAgg allows us to draw matplotlib to a canvas with TkAgg
 # NavigationToolbar2TkAgg is the small toolbar in every matplotlib graph
-# from matplotlib.figure import Figure
-import matplotlib.animation as animation
-from matplotlib import style
 from matplotlib import pyplot as plt
-import matplotlib.dates as mdates
-import matplotlib.ticker as mticker
-from matplotlib.finance import candlestick_ohlc
-import urllib
-import json
-import pandas as pd
-import numpy as np
-
 import models
-from ui import animate
 import api
 
 session = models.Session()
-
-# style.use("ggplot")
-
-
 
 ### TODO: move to config
 # defining constants
