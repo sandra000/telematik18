@@ -1,6 +1,9 @@
 #here must to be startpoint of application
 #something like this
-from ui.mainForm import SeaofBTCapp
+import matplotlib
+matplotlib.use("TkAgg")
+
+from ui import SeaofBTCapp
 
 
 app = SeaofBTCapp()

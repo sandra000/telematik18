@@ -1,8 +1,7 @@
 import tkinter as tk
 from tkinter import ttk #css for tkinter
+from tkinter import messagebox
 
-import matplotlib
-matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 # FigureCanvasTkAgg allows us to draw matplotlib to a canvas with TkAgg
 # NavigationToolbar2TkAgg is the small toolbar in every matplotlib graph
@@ -20,6 +19,8 @@ import numpy as np
 
 import models
 from ui import animate
+import api
+
 session = models.Session()
 
 # style.use("ggplot")
@@ -325,36 +326,40 @@ def addMiddleIndicator(what):
     else:
         middleIndicator = "none"
 
+
 def changeTimeFrame(tf):
-  global dataPace
-  global datCounter
-  if tf == "7d" and resampleSize=="1Min":
-    popupmsg("Too much data chosen, choose a smaller timeframe")
-  else:
-    dataPace = tf
-    datCounter = 9000
+    global dataPace
+    global datCounter
+    if tf == "7d" and resampleSize == "1Min":
+        popupmsg("Too much data chosen, choose a smaller timeframe")
+    else:
+        dataPace = tf
+        datCounter = 9000
+
 
 def changeSampleSize(size, width):
-  global resampleSize
-  global datCounter
-  global candleWidth
-  if dataPace == "7d" and resampleSize=="1Min":
-    popupmsg("Too much data chosen, choose a smaller timeframe")
-  elif dataPace == "tick":
-    popupmsg("You are currently viewing tick data, not OHLC.")
-  else:
-    resampleSize = sizeDat
+    global resampleSize
+    global datCounter
+    global candleWidth
+    if dataPace == "7d" and resampleSize == "1Min":
+        popupmsg("Too much data chosen, choose a smaller timeframe")
+    elif dataPace == "tick":
+        popupmsg("You are currently viewing tick data, not OHLC.")
+    # else:
+    # #TODO: we dont use this
+    #     resampleSize = sizeDat
+    #     datCounter = 9000
+    #     candleWidth = width
+
+
+def changeExchange(toWhat, pn):  # pn is the program name
+    global exchange  # we global the variables so we are able to modify them
+    global datCounter
+    global programName
+
+    exchange = toWhat
     datCounter = 9000
-    candleWidth = width
-
-def changeExchange(toWhat, pn): #pn is the program name
-  global exchange  #we global the variables so we are able to modify them
-  global datCounter
-  global programName
-
-  exchange = toWhat
-  datCounter = 9000
-  programName = pn
+    programName = pn
 
 def popupmsg(msg):
     popup = tk.Tk() #creates an empty window
@@ -365,9 +370,74 @@ def popupmsg(msg):
     B1.pack()
     popup.mainloop()
 
+class StartPage(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)  # StartPages's parent is the SeaofBTCapp class
+        label = tk.Label(self, text="Cryptocurrencies \nTrading Analyse", font=LARGE_FONT)  # like the JavaFX label
+        label.pack(pady=10, padx=10)  # if you have 1,2 or 3 elements, use pack. Otherwise, use grid()
+        button1 = tk.Button(self, text="Agree", command=lambda: controller.show_frame(BTCe_Page))
+        # dont pass the function directly to command as command=qf("text").
+        # The function will be executed once and not again.
+        # To be able to run the function every time the button is pressed, use lambda:
+        button1.pack()
+        button2 = tk.Button(self, text="Disagree", command=quit)
+        button2.pack()
+
+
+# reference to how to create a new page
+class PageOne(tk.Frame):
+    # sometimes you program the whole page under the __init__ function
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        label = tk.Label(self, text="Page One", font=LARGE_FONT)
+        label.pack(pady=10, padx=10)
+
+        button1 = tk.Button(self, text="Home", command=lambda: controller.show_frame(StartPage))
+        button1.pack()
+
+        # #TODO: we dont use this
+        # button2 = tk.Button(self, text="Page Two", command=lambda: controller.show_frame(PageTwo))
+        # button2.pack()
+
+
+
+class BTCe_Page(tk.Frame):
+
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
+        label.pack(pady=10, padx=10)
+
+        button1 = tk.Button(self, text="Home", command=lambda: controller.show_frame(StartPage))
+        button1.pack()
+
+        ### add a matplotlib graph to the page
+        canvas = FigureCanvasTkAgg(controller.f, self)
+        canvas.show()
+        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+
+        # add matplotlib toolbar (zoom, home, etc)
+        toolbar = NavigationToolbar2TkAgg(canvas, self)
+        toolbar.update()
+        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+        # run animate every 2 seconds; beware: while the app is updating, the app becomes frozen
+
+
+def run_main_import():
+    result = api.main_import()
+    if result:
+        messagebox.showinfo("Result", "Done")
+
+
 class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.Tk
+    # main controller
+    f = plt.figure()
 
     def __init__(self, *args, **kwargs):
+
+
         # when we call upon the class, this initalize method WILL ALWAYS RUN
         # self is always implied as the first argument
         # *args is any number of variables
@@ -391,12 +461,16 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         # puts the menubar inside the container
         # puts the File submenu inside the menubar; tearoff means you can detach the menu
         menubar = tk.Menu(container)
+
         filemenu = tk.Menu(menubar, tearoff=0)
         filemenu.add_command(label="Save settings", command=lambda: popupmsg("Not supported just yet!"))
-        filemenu.add_separator()  # adds a line between the menu options
+        filemenu.add_separator()
         filemenu.add_command(label="Exit", command=quit)
-        # 2. We show the menubar (frontend)
         menubar.add_cascade(label="File", menu=filemenu)
+
+        api_menu = tk.Menu(menubar, tearoff=1)
+        api_menu.add_command(label="Import data", command=lambda: run_main_import())
+        menubar.add_cascade(label="API", menu=api_menu)
 
         # submenu Exchange
         exchangeChoice = tk.Menu(menubar, tearoff=1)
@@ -407,54 +481,54 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         exchangeChoice.add_command(label="Huobi", command=lambda: changeExchange("Huobi", "huobi"))
         menubar.add_cascade(label="Exchange", menu=exchangeChoice)
 
-        # submenu Data Time Frame Selection
-        dataTF = tk.Menu(menubar, tearoff=1)
-        dataTF.add_cascade(label="Tick", command=lambda: changeTimeFrame('tick'))
-        dataTF.add_cascade(label="1 Day", command=lambda: changeTimeFrame('1d'))
-        dataTF.add_cascade(label="3 Day", command=lambda: changeTimeFrame('3d'))
-        dataTF.add_cascade(label="1 Week", command=lambda: changeTimeFrame('7d'))
-        menubar.add_cascade(label="Data Time Frame", menu=dataTF)
-
-        OHLCI = tk.Menu(menubar, tearoff=1)
-        OHLCI.add_command(label="Tick", command=lambda: changeTimeFrame('tick'))
-        OHLCI.add_command(label="1 Minute", command=lambda: changeSampleSize('1Min', 0.0005))
-        OHLCI.add_command(label="5 Minute", command=lambda: changeSampleSize('5Min', 0.003))
-        OHLCI.add_command(label="15 Minute", command=lambda: changeSampleSize('15Min', 0.008))
-        OHLCI.add_command(label="30 Minute", command=lambda: changeSampleSize('30Min', 0.016))
-        OHLCI.add_command(label="1 Hour", command=lambda: changeSampleSize('1H', 0.032))
-        OHLCI.add_command(label="3 Hour", command=lambda: changeSampleSize('3H', 0.096))
-        menubar.add_cascade(label="OHLC Interval", menu=OHLCI)
-
-        topIndi = tk.Menu(menubar, tearoff=1)
-        topIndi.add_command(label="None", command=lambda: addTopIndicator("none"))
-        topIndi.add_command(label="RSI", command=lambda: addTopIndicator("rsi"))
-        topIndi.add_command(label="MACD", command=lambda: addTopIndicator("macd"))
-        menubar.add_cascade(label="Top Indicator", menu=topIndi)
-
-        mainIndi = tk.Menu(menubar, tearoff=1)
-        mainIndi.add_command(label="None", command=lambda: addMiddleIndicator("none"))
-        mainIndi.add_command(label="SMA", command=lambda: addMiddleIndicator("sma"))
-        mainIndi.add_command(label="EMA", command=lambda: addMiddleIndicator("ema"))
-        menubar.add_cascade(label="Main Indicator", menu=mainIndi)
-
-        bottomIndi = tk.Menu(menubar, tearoff=1)
-        bottomIndi.add_command(label="None", command=lambda: addBottomIndicator("none"))
-        bottomIndi.add_command(label="RSI", command=lambda: addBottomIndicator("rsi"))
-        bottomIndi.add_command(label="MACD", command=lambda: addBottomIndicator("macd"))
-        menubar.add_cascade(label="Bottom Indicator", menu=bottomIndi)
-
-        tradeButton = tk.Menu(menubar, tearoff=1)
-        tradeButton.add_command(label="Manual Trading", command=lambda: popupmsg("Not live yet"))
-        tradeButton.add_command(label="Automated Trading", command=lambda: popupmsg("Not live yet"))
-        tradeButton.add_separator()
-
-        tradeButton.add_command(label="Quick Buy", command=lambda: popupmsg("Not live yet"))
-        tradeButton.add_command(label="Quick Sell", command=lambda: popupmsg("Not live yet"))
-        tradeButton.add_separator()
-
-        tradeButton.add_command(label="Setup Quick Buy/Sell", command=lambda: popupmsg("Not live yet"))
-
-        menubar.add_cascade(label="Trading", menu=tradeButton)
+        # # submenu Data Time Frame Selection
+        # dataTF = tk.Menu(menubar, tearoff=1)
+        # dataTF.add_cascade(label="Tick", command=lambda: changeTimeFrame('tick'))
+        # dataTF.add_cascade(label="1 Day", command=lambda: changeTimeFrame('1d'))
+        # dataTF.add_cascade(label="3 Day", command=lambda: changeTimeFrame('3d'))
+        # dataTF.add_cascade(label="1 Week", command=lambda: changeTimeFrame('7d'))
+        # menubar.add_cascade(label="Data Time Frame", menu=dataTF)
+        #
+        # OHLCI = tk.Menu(menubar, tearoff=1)
+        # OHLCI.add_command(label="Tick", command=lambda: changeTimeFrame('tick'))
+        # OHLCI.add_command(label="1 Minute", command=lambda: changeSampleSize('1Min', 0.0005))
+        # OHLCI.add_command(label="5 Minute", command=lambda: changeSampleSize('5Min', 0.003))
+        # OHLCI.add_command(label="15 Minute", command=lambda: changeSampleSize('15Min', 0.008))
+        # OHLCI.add_command(label="30 Minute", command=lambda: changeSampleSize('30Min', 0.016))
+        # OHLCI.add_command(label="1 Hour", command=lambda: changeSampleSize('1H', 0.032))
+        # OHLCI.add_command(label="3 Hour", command=lambda: changeSampleSize('3H', 0.096))
+        # menubar.add_cascade(label="OHLC Interval", menu=OHLCI)
+        #
+        # topIndi = tk.Menu(menubar, tearoff=1)
+        # topIndi.add_command(label="None", command=lambda: addTopIndicator("none"))
+        # topIndi.add_command(label="RSI", command=lambda: addTopIndicator("rsi"))
+        # topIndi.add_command(label="MACD", command=lambda: addTopIndicator("macd"))
+        # menubar.add_cascade(label="Top Indicator", menu=topIndi)
+        #
+        # mainIndi = tk.Menu(menubar, tearoff=1)
+        # mainIndi.add_command(label="None", command=lambda: addMiddleIndicator("none"))
+        # mainIndi.add_command(label="SMA", command=lambda: addMiddleIndicator("sma"))
+        # mainIndi.add_command(label="EMA", command=lambda: addMiddleIndicator("ema"))
+        # menubar.add_cascade(label="Main Indicator", menu=mainIndi)
+        #
+        # bottomIndi = tk.Menu(menubar, tearoff=1)
+        # bottomIndi.add_command(label="None", command=lambda: addBottomIndicator("none"))
+        # bottomIndi.add_command(label="RSI", command=lambda: addBottomIndicator("rsi"))
+        # bottomIndi.add_command(label="MACD", command=lambda: addBottomIndicator("macd"))
+        # menubar.add_cascade(label="Bottom Indicator", menu=bottomIndi)
+        #
+        # tradeButton = tk.Menu(menubar, tearoff=1)
+        # tradeButton.add_command(label="Manual Trading", command=lambda: popupmsg("Not live yet"))
+        # tradeButton.add_command(label="Automated Trading", command=lambda: popupmsg("Not live yet"))
+        # tradeButton.add_separator()
+        #
+        # tradeButton.add_command(label="Quick Buy", command=lambda: popupmsg("Not live yet"))
+        # tradeButton.add_command(label="Quick Sell", command=lambda: popupmsg("Not live yet"))
+        # tradeButton.add_separator()
+        #
+        # tradeButton.add_command(label="Setup Quick Buy/Sell", command=lambda: popupmsg("Not live yet"))
+        #
+        # menubar.add_cascade(label="Trading", menu=tradeButton)
 
         startStop = tk.Menu(menubar, tearoff=1)
         startStop.add_command(label="Resume", command=lambda: loadChart('start'))
@@ -485,6 +559,10 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
             # if you dont use a row, default is the first unused row in the grid
             # http://effbot.org/tkinterbook/grid.htm for more grid() options
 
+        a = self.f.add_subplot(111)
+        # THIS is life animation
+        ##ani = animation.FuncAnimation(self.f, animate, fargs=[a], interval=1000)
+        self.f.canvas.show()
         self.show_frame(StartPage)
 
     def show_frame(self, cont):
@@ -493,69 +571,7 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         # tkraise() raises frame to the front
 
 
-class StartPage(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)  # StartPages's parent is the SeaofBTCapp class
-        label = tk.Label(self, text="Cryptocurrencies \nTrading Analyse", font=LARGE_FONT)  # like the JavaFX label
-        label.pack(pady=10, padx=10)  # if you have 1,2 or 3 elements, use pack. Otherwise, use grid()
-        button1 = tk.Button(self, text="Agree", command=lambda: controller.show_frame(BTCe_Page))
-        # dont pass the function directly to command as command=qf("text").
-        # The function will be executed once and not again.
-        # To be able to run the function every time the button is pressed, use lambda:
-        button1.pack()
-        button2 = tk.Button(self, text="Disagree", command=quit)
-        button2.pack()
-
-
-# reference to how to create a new page
-class PageOne(tk.Frame):
-    # sometimes you program the whole page under the __init__ function
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Page One", font=LARGE_FONT)
-        label.pack(pady=10, padx=10)
-
-        button1 = tk.Button(self, text="Home", command=lambda: controller.show_frame(StartPage))
-        button1.pack()
-
-        button2 = tk.Button(self, text="Page Two", command=lambda: controller.show_frame(PageTwo))
-        button2.pack()
-
-class BTCe_Page(tk.Frame):
-
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        f = plt.figure()
-
-        label = tk.Label(self, text="Graph Page", font=LARGE_FONT)
-        label.pack(pady=10, padx=10)
-
-        button1 = tk.Button(self, text="Home", command=lambda: controller.show_frame(StartPage))
-        button1.pack()
-
-        ### add a matplotlib graph to the page
-        canvas = FigureCanvasTkAgg(f, self)
-        canvas.show()
-        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-
-        # add matplotlib toolbar (zoom, home, etc)
-        toolbar = NavigationToolbar2TkAgg(canvas, self)
-        toolbar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-        a = f.add_subplot(111)
-        ani = animation.FuncAnimation(f, animate, fargs=[a],
-                                      interval=1000)
-
-
 app = SeaofBTCapp()
-app.geometry("1280x720")  # size of the window
-
-
-# create a live matplotlib graph. Canvas:
-# f = Figure(figsize=(10,6), dpi=100)
-
-
+app.geometry("1280x720")
 app.mainloop()
-# mainloop() is a tkinter method to "run" the app
+

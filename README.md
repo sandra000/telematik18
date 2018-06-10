@@ -1,4 +1,4 @@
-##To install:
+## To install:
 
 pip3 install -r requirements.txt
 
@@ -10,3 +10,6 @@ port install freetype
 port install pkgconfig
 port install libpng
 
+
+##  To start
+run main.py
