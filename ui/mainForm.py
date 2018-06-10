@@ -20,6 +20,7 @@ import numpy as np
 import models
 from ui import animate
 import api
+from ui import CorrelationFrame
 
 session = models.Session()
 
@@ -445,7 +446,7 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         tk.Tk.__init__(self, *args, **kwargs)
         # initalizing tkinter
 
-        tk.Tk.wm_title(self, "Sea of BTC client")
+        tk.Tk.wm_title(self, "Cryptocurrencies analyzer")
         container = tk.Frame(self)
         # container is the basis of every Tkinter GUI.
         # Frame is the edges of the basic window
@@ -471,6 +472,11 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         api_menu = tk.Menu(menubar, tearoff=1)
         api_menu.add_command(label="Import data", command=lambda: run_main_import())
         menubar.add_cascade(label="API", menu=api_menu)
+
+        windows_menu = tk.Menu(menubar, tearoff=1)
+        windows_menu.add_command(label="Correlation", command=lambda: self.show_frame(CorrelationFrame))
+        menubar.add_cascade(label="Windows", menu=windows_menu)
+
 
         # submenu Exchange
         exchangeChoice = tk.Menu(menubar, tearoff=1)
@@ -548,7 +554,7 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         # when we want to show a specific window, we run code to change the frame in frames
 
         # packing each page into frames:
-        for F in (StartPage, BTCe_Page):
+        for F in (StartPage, BTCe_Page, CorrelationFrame):
             frame = F(container, self)  # main page
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
