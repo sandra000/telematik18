@@ -1,7 +1,7 @@
 import tkinter as tk
+import matplotlib.animation as animation
 from tkinter import ttk #css for tkinter
 from tkinter import messagebox
-
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 # FigureCanvasTkAgg allows us to draw matplotlib to a canvas with TkAgg
 # NavigationToolbar2TkAgg is the small toolbar in every matplotlib graph
@@ -548,7 +548,7 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
 
         a = self.f.add_subplot(111)
         # THIS is life animation
-        ###ani = animation.FuncAnimation(self.f, animate, fargs=[a], interval=1000)
+        ani = animation.FuncAnimation(self.f, animate, fargs=[a], interval=1000)
         self.f.canvas.show()
         self.show_frame(StartPage)
 
