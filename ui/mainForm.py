@@ -486,7 +486,7 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         data_menu.add_command(label="Currencies", command=lambda: self.show_frame(CryptocurrencyDataFrame))
         data_menu.add_command(label="Symbols", command=lambda: self.show_frame(SymbolDataFrame))
         data_menu.add_command(label="History", command=lambda: self.show_frame(HistoryDataFrame))
-        menubar.add_cascade(label="Show db data", menu=data_menu)
+        menubar.add_cascade(label="Show data", menu=data_menu)
 
         # submenu Exchange
         exchangeChoice = tk.Menu(menubar, tearoff=1)
