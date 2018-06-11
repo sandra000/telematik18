@@ -21,6 +21,10 @@ import models
 from ui import animate
 import api
 from ui import CorrelationFrame
+from ui import HistoryDataFrame
+from ui import CryptocurrencyDataFrame
+from ui import ExchangeDataFrame
+from ui import SymbolDataFrame
 
 session = models.Session()
 
@@ -477,6 +481,12 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         windows_menu.add_command(label="Correlation", command=lambda: self.show_frame(CorrelationFrame))
         menubar.add_cascade(label="Windows", menu=windows_menu)
 
+        data_menu = tk.Menu(menubar, tearoff=1)
+        data_menu.add_command(label="Markets", command=lambda: self.show_frame(ExchangeDataFrame))
+        data_menu.add_command(label="Currencies", command=lambda: self.show_frame(CryptocurrencyDataFrame))
+        data_menu.add_command(label="Symbols", command=lambda: self.show_frame(SymbolDataFrame))
+        data_menu.add_command(label="History", command=lambda: self.show_frame(HistoryDataFrame))
+        menubar.add_cascade(label="Show db data", menu=data_menu)
 
         # submenu Exchange
         exchangeChoice = tk.Menu(menubar, tearoff=1)
@@ -564,6 +574,11 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
             # sticky="nsew" stretches the element to the size of the window
             # if you dont use a row, default is the first unused row in the grid
             # http://effbot.org/tkinterbook/grid.htm for more grid() options
+
+        for F in (HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame):
+            frame = F(container, self)  # main page
+            self.frames[F] = frame
+            frame.grid(row=0, column=0, sticky="nsew")
 
         a = self.f.add_subplot(111)
         # THIS is life animation

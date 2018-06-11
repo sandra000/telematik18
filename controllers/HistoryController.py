@@ -1,22 +1,23 @@
 import models
 import numpy as np
-
-session = models.Session()
+import pandas as pd
 
 
 class History(object):
 
-    def getHistory(self, session):
-        session.query(models.History).get({"x": 5})
+    session = models.Session()
 
-    def get_correlation(self):
-        session = models.Session()
-        symbol_global_id = 'BITSTAMP_SPOT_BTC_USD'
-        symbols = session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_global_id).all()
-        if len(symbols) > 0:
-            symbol_id = symbols[0].id
-            result = session.query(models.History).filter(models.History.symbol_id == symbol_id).all()
-            return result
+    def get_history_by_base_currency(self, currency_id):
+        return self.session.query(models.History).join(models.History.base_currency).filter(models.History.base_currency_id == currency_id).all()
+
+    def get_all_history(self):
+        #return self.session.query(models.History).join(models.History.base_currency).all()
+        query = self.session.query(models.History).join(models.History.base_currency)
+        return pd.read_sql(query.statement, self.session.bind)
+
+    def get_all_base_currency_from_history(self):
+        return self.session.query(models.History).group_by(models.History.base_currency_id).all()
+
 
 def animate(i, a):
     # 1. get data
@@ -41,6 +42,3 @@ def animate(i, a):
     #diff curr have diff time???
     session.commit()
     return True
-
-tar = History()
-test = tar.get_correlation()
