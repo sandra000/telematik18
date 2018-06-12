@@ -1,24 +1,13 @@
 import tkinter as tk
+import matplotlib.animation as animation
 from tkinter import ttk #css for tkinter
 from tkinter import messagebox
-
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 # FigureCanvasTkAgg allows us to draw matplotlib to a canvas with TkAgg
 # NavigationToolbar2TkAgg is the small toolbar in every matplotlib graph
-# from matplotlib.figure import Figure
-import matplotlib.animation as animation
-from matplotlib import style
 from matplotlib import pyplot as plt
-import matplotlib.dates as mdates
-import matplotlib.ticker as mticker
-from matplotlib.finance import candlestick_ohlc
-import urllib
-import json
-import pandas as pd
-import numpy as np
-
-import models
 from ui import animate
+import models
 import api
 from ui import CorrelationFrame
 from ui import HistoryDataFrame
@@ -27,10 +16,6 @@ from ui import ExchangeDataFrame
 from ui import SymbolDataFrame
 
 session = models.Session()
-
-# style.use("ggplot")
-
-
 
 ### TODO: move to config
 # defining constants
@@ -366,6 +351,7 @@ def changeExchange(toWhat, pn):  # pn is the program name
     datCounter = 9000
     programName = pn
 
+
 def popupmsg(msg):
     popup = tk.Tk() #creates an empty window
     popup.wm_title("!")
@@ -374,6 +360,7 @@ def popupmsg(msg):
     B1 = ttk.Button(popup, text= "OK", command= lambda: popup.destroy())
     B1.pack()
     popup.mainloop()
+
 
 class StartPage(tk.Frame):
 
@@ -582,7 +569,7 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
 
         a = self.f.add_subplot(111)
         # THIS is life animation
-        ##ani = animation.FuncAnimation(self.f, animate, fargs=[a], interval=1000)
+        ani = animation.FuncAnimation(self.f, animate, fargs=[a], interval=1000)
         self.f.canvas.show()
         self.show_frame(StartPage)
 
