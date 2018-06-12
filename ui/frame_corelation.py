@@ -1,6 +1,7 @@
 import tkinter as tk
-from pandastable import Table, TableModel
 import pandas as pd
+import numpy as np
+from pandastable import Table, TableModel
 from controllers import HistoryController
 
 class CorrelationFrame(tk.Frame):
@@ -9,24 +10,48 @@ class CorrelationFrame(tk.Frame):
         tk.Frame.__init__(self, parent)
         #button2 = tk.Button(self, text="Disagree", command=quit)
         #button2.pack()
-        d = {'one': pd.Series([1., 2., 4.], index=['a', 'b', 'caaaa']),
-             'two': pd.Series([1., 2., 3.], index=['a', 'b', 'caaaa'])}
-        df = pd.DataFrame(d)
-        df2 = self.get_correlation()
-        tbM = TableModel(dataframe=df2)
+        df = self.get_correlation()
+        tbM = TableModel(dataframe=df)
         table = Table(self, model=tbM)
         table.show()
         #alter the DataFrame in some way, then update
         table.redraw()
 
     def get_correlation(self):
+        #TODO: sort the history list
         history = HistoryController.History()
-        return history.get_all_history()
+        historydata = history.get_all()
         all_base_cuurencies = history.get_all_base_currency_from_history()
-        symbols = session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_global_id).all()
-        if len(symbols) > 0:
-            symbol_id = symbols[0].id
-            result = session.query(models.History).filter(models.History.symbol_id == symbol_id).all()
-            return result
+        historydata_grouped = historydata.groupby('base_currency_id')
+        currency_list = []
+        for item in all_base_cuurencies:
+            currency_list.append(all_base_cuurencies[item].base_currency.name)
+        output_pd = pd.DataFrame(index=currency_list, columns=currency_list)
+        for name, group in historydata_grouped:
+            #print(all_base_cuurencies[name].base_currency.name)
+            currency_name = all_base_cuurencies[name].base_currency.name
+            main_currency_arr = group.ask_price.values
+            output_arr = []
+            for name2, group2 in historydata_grouped:
+                #print(name2)
+                #print(all_base_cuurencies[name2].base_currency.name)
+                #print(group2)
+                tmp_main_currency_arr = main_currency_arr
+                current_currency_arr = group2.ask_price.values
+                if current_currency_arr.size > main_currency_arr.size:
+                    current_currency_arr = np.resize(current_currency_arr, main_currency_arr.shape)
+                if current_currency_arr.size < main_currency_arr.size:
+                    tmp_main_currency_arr = np.resize(main_currency_arr, current_currency_arr.shape)
+                coef = np.corrcoef(tmp_main_currency_arr, current_currency_arr)
+                #Pearson correlation coefficient
+                #coef is a matrix, here it is matrix 1x1
+                output_arr.append(coef[0,1])
+            output_pd.loc[currency_name] = output_arr
+        return output_pd
+
+
+
+
+
 
 #   df = pd.read_sql(sql_command, engine)

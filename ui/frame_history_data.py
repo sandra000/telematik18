@@ -16,4 +16,4 @@ class HistoryDataFrame(tk.Frame):
 
     def get_history(self):
         history = History()
-        return history.get_all_history()
+        return history.get_all()
