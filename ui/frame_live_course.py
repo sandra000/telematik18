@@ -29,7 +29,7 @@ EMAs = []
 SMAs = []
 
 
-def animate(i, a):
+def FrameLiveCourse(i, a):
     global refreshRate
     global datCounter
 
@@ -89,7 +89,8 @@ def animate(i, a):
                         title = "BTC-e BTCUSD" "\nLast Price: "  # + str(data["price"].tail(1)) # the index 1999 does not work
                         a.set_title(title)
 
-                        priceData = df['price'].apply(float).tolist()
+                        #TODO: i dont what is this, but this produce a lot of esception
+                        #priceData = df['price'].apply(float).tolist()
 
 
                 except Exception as e:

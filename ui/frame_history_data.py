@@ -8,8 +8,8 @@ class HistoryDataFrame(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         df = self.get_history()
-        tbM = TableModel(dataframe=df)
-        table = Table(self, model=tbM)
+        tb_m = TableModel(dataframe=df)
+        table = Table(self, model=tb_m)
         table.show()
         #alter the DataFrame in some way, then update
         table.redraw()

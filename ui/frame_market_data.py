@@ -8,8 +8,8 @@ class ExchangeDataFrame(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         df = self.get_exchange()
-        tbM = TableModel(dataframe=df)
-        table = Table(self, model=tbM)
+        tb_m = TableModel(dataframe=df)
+        table = Table(self, model=tb_m)
         table.show()
         table.redraw()
 

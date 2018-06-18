@@ -6,7 +6,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 # FigureCanvasTkAgg allows us to draw matplotlib to a canvas with TkAgg
 # NavigationToolbar2TkAgg is the small toolbar in every matplotlib graph
 from matplotlib import pyplot as plt
-from ui import animate
+from ui import FrameLiveCourse
 import models
 import api
 from ui import CorrelationFrame
@@ -14,6 +14,7 @@ from ui import HistoryDataFrame
 from ui import CryptocurrencyDataFrame
 from ui import ExchangeDataFrame
 from ui import SymbolDataFrame
+from ui import CorrelationGraphFrame
 
 session = models.Session()
 
@@ -365,7 +366,7 @@ def popupmsg(msg):
 class StartPage(tk.Frame):
 
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)  # StartPages's parent is the SeaofBTCapp class
+        tk.Frame.__init__(self, parent)  # StartPages's parent is the MainForm class
         label = tk.Label(self, text="Cryptocurrencies \nTrading Analyse", font=LARGE_FONT)  # like the JavaFX label
         label.pack(pady=10, padx=10)  # if you have 1,2 or 3 elements, use pack. Otherwise, use grid()
         button1 = tk.Button(self, text="Agree", command=lambda: controller.show_frame(BTCe_Page))
@@ -423,9 +424,13 @@ def run_main_import():
         messagebox.showinfo("Result", "Done")
 
 
-class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.Tk
+class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
     # main controller
+    # figure for old graph(live course)
     f = plt.figure()
+    LARGE_FONT = ("Verdana", 12)
+    NORM_FONT = ("Verdana", 10)
+    SMALL_FONT = ("Verdana", 8)
 
     def __init__(self, *args, **kwargs):
 
@@ -464,9 +469,10 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         api_menu.add_command(label="Import data", command=lambda: run_main_import())
         menubar.add_cascade(label="API", menu=api_menu)
 
-        windows_menu = tk.Menu(menubar, tearoff=1)
-        windows_menu.add_command(label="Correlation", command=lambda: self.show_frame(CorrelationFrame))
-        menubar.add_cascade(label="Windows", menu=windows_menu)
+        correlation_menu = tk.Menu(menubar, tearoff=1)
+        correlation_menu.add_command(label="Correlation", command=lambda: self.show_frame(CorrelationFrame))
+        correlation_menu.add_command(label="Correaltion graph", command=lambda: self.show_frame(CorrelationGraphFrame))
+        menubar.add_cascade(label="Windows", menu=correlation_menu)
 
         data_menu = tk.Menu(menubar, tearoff=1)
         data_menu.add_command(label="Markets", command=lambda: self.show_frame(ExchangeDataFrame))
@@ -562,14 +568,14 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
             # if you dont use a row, default is the first unused row in the grid
             # http://effbot.org/tkinterbook/grid.htm for more grid() options
 
-        for F in (HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame):
+        for F in (HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame, CorrelationGraphFrame):
             frame = F(container, self)  # main page
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
         a = self.f.add_subplot(111)
         # THIS is life animation
-        ani = animation.FuncAnimation(self.f, animate, fargs=[a], interval=1000)
+        ani = animation.FuncAnimation(self.f, FrameLiveCourse, fargs=[a], interval=1000)
         self.f.canvas.show()
         self.show_frame(StartPage)
 
@@ -579,7 +585,7 @@ class SeaofBTCapp(tk.Tk):  # SeaofBTCapp is the main class. It inherits from tk.
         # tkraise() raises frame to the front
 
 
-app = SeaofBTCapp()
+app = MainForm()
 app.geometry("1280x720")
 app.mainloop()
 
