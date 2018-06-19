@@ -2,6 +2,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float
 from sqlalchemy.orm import relationship
 from .base import Base
 from .cryptocurrency import Cryptocurrency
+from .parameter import Parammeter
 from .mark import Mark
 from .symbol import Symbol
 
@@ -22,9 +23,11 @@ class History(Base):
     quote_currency_id = Column(Integer, ForeignKey('cryptocurrencies.id'))
     symbol_id = Column(Integer, ForeignKey('symbols.id'), nullable=True)
     mark_id = Column(Integer, ForeignKey('marks.id'), nullable=True)# this if we want to use something else as coinapi
+    parameter_id = Column(Integer, ForeignKey('parameters.id'), nullable=True)
 
     base_currency = relationship(Cryptocurrency, primaryjoin=base_currency_id == Cryptocurrency.id)
     quote_currency = relationship(Cryptocurrency, primaryjoin=quote_currency_id == Cryptocurrency.id)
+    parameter = relationship(Parammeter, primaryjoin=parameter_id == Parammeter.id)
     #symbol = relationship(Symbol, primaryjoin=symbol_id == Symbol.id)
     #mark = relationship(Mark)
 

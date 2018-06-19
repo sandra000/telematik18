@@ -19,12 +19,15 @@ class CorrelationGraphFrame(tk.Frame):
         #TODO: fix this
         bitcoin_name = 1
         etherum_name = 3
+        zcash_name = 17
         history = HistoryController.History()
         historydata = history.get_all()
         historydata_grouped = historydata.groupby('base_currency_id')
         bitcoin_max_price = historydata_grouped.get_group(bitcoin_name).ask_price.max()
         etherum_max_price = historydata_grouped.get_group(etherum_name).ask_price.max()
+        zcash_max_price = historydata_grouped.get_group(zcash_name).ask_price.max()
         coeficeint_diff = bitcoin_max_price / etherum_max_price
+        coeficeint_diff2 = bitcoin_max_price / zcash_max_price
         etherum_ask_price_normalise = historydata_grouped.get_group(etherum_name).ask_price.mul(coeficeint_diff).values
         a.plot(historydata_grouped.get_group(bitcoin_name).ask_price.values, color='red', label='bitcoin')
         a.plot(etherum_ask_price_normalise, color='blue', label='ethereum')
@@ -33,7 +36,7 @@ class CorrelationGraphFrame(tk.Frame):
         #matplotlib.pyplot.arrow(x, y, dx, dy, hold=None, **kwargs)¶
 
         canvas = FigureCanvasTkAgg(self.figureCorelation, self)
-        canvas.show()
+        canvas.draw()
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
         toolbar = NavigationToolbar2TkAgg(canvas, self)

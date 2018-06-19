@@ -70,7 +70,7 @@ def main_import():
 
     def insert_history(ohlcv, symbol, base_currency_id, quote_currency_id):
         #TODO: do this get_cryptocurrency_id only one time id use symbols
-        # TODO: flush date for the first
+        # TODO: flush data for the first
         # now only for BITSTAMP_SPOT_BTC_USD
 
         ohlcv_new = models.History()
