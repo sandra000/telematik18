@@ -5,8 +5,6 @@ from datetime import datetime, date, time
 import dateutil.parser
 
 
-# TODO: transform it to class?
-
 class MainImport(object):
 
     session = models.Session()
