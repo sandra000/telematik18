@@ -8,7 +8,7 @@ from .exchange import Exchange
 from .orderBook import Orderbook
 from .trade import Trade
 from .symbol import Symbol
-from .parameter import Parammeter
+from .parameter import Parameter
 from .base import Base
 
 # engine = create_engine(os.environ['DATABASE_URL'])

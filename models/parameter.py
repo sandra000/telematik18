@@ -2,7 +2,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float
 from .base import Base
 
 
-class Parammeter(Base):
+class Parameter(Base):
     __tablename__ = 'parameters'
 
     id = Column(Integer, primary_key=True)
@@ -15,4 +15,4 @@ class Parammeter(Base):
         self.name = name
 
     def __repr__(self):
-        return '<Mark: {}>'.format(self.id)
+        return '<Parameter: {}>'.format(self.id)

@@ -2,7 +2,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Float
 from sqlalchemy.orm import relationship
 from .base import Base
 from .cryptocurrency import Cryptocurrency
-from .parameter import Parammeter
+from .parameter import Parameter
 from .mark import Mark
 from .symbol import Symbol
 
@@ -27,7 +27,7 @@ class History(Base):
 
     base_currency = relationship(Cryptocurrency, primaryjoin=base_currency_id == Cryptocurrency.id)
     quote_currency = relationship(Cryptocurrency, primaryjoin=quote_currency_id == Cryptocurrency.id)
-    parameter = relationship(Parammeter, primaryjoin=parameter_id == Parammeter.id)
+    parameter = relationship(Parameter, primaryjoin=parameter_id == Parameter.id)
     #symbol = relationship(Symbol, primaryjoin=symbol_id == Symbol.id)
     #mark = relationship(Mark)
 

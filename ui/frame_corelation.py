@@ -9,15 +9,18 @@ class CorrelationFrame(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        self.table = pt = Table(self)
+        pt.show()
+
+    def update(self):
         df = self.get_correlation()
-        tbM = TableModel(dataframe=df)
-        table = Table(self, model=tbM)
-        table.show()
-        #alter the DataFrame in some way, then update
-        table.redraw()
+        tbm = TableModel(dataframe=df)
+        self.table.model = tbm
+        self.table.show()
+        self.table.redraw()
 
     def get_correlation(self):
-        #TODO: sort the history list
+        # TODO: sort the history list
         history = HistoryController.History()
         historydata = history.get_all()
         all_base_cuurencies = history.get_all_base_currency_from_history()
@@ -38,6 +41,6 @@ class CorrelationFrame(tk.Frame):
                 if current_currency_arr.size < main_currency_arr.size:
                     tmp_main_currency_arr = np.resize(main_currency_arr, current_currency_arr.shape)
                 coef = np.corrcoef(tmp_main_currency_arr, current_currency_arr)
-                output_arr.append(coef[0,1])
+                output_arr.append(coef[0, 1])
             output_pd.loc[currency_name] = output_arr
         return output_pd

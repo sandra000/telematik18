@@ -493,15 +493,9 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
             messagebox.showinfo("Result", "Import is completed")
 
     def __init__(self, *args, **kwargs):
-
-
-        # when we call upon the class, this initalize method WILL ALWAYS RUN
-        # self is always implied as the first argument
         # *args is any number of variables
         # **kwargs keyword arguments; we are passing through dictionaries
         tk.Tk.__init__(self, *args, **kwargs)
-        # initalizing tkinter
-
         tk.Tk.wm_title(self, "Cryptocurrencies analyzer")
         container = tk.Frame(self)
         # container is the basis of every Tkinter GUI.
@@ -645,6 +639,8 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
 
     def show_frame(self, cont):
         frame = self.frames[cont]
+        if frame.update:
+            frame.update()
         frame.tkraise()
         # tkraise() raises frame to the front
 
