@@ -22,6 +22,8 @@ class CorrelationGraphFrame(tk.Frame):
         zcash_name = 17
         history = HistoryController.History()
         historydata = history.get_all()
+        if historydata.values.size == 0:
+            return
         historydata_grouped = historydata.groupby('base_currency_id')
         bitcoin_max_price = historydata_grouped.get_group(bitcoin_name).ask_price.max()
         etherum_max_price = historydata_grouped.get_group(etherum_name).ask_price.max()
