@@ -4,71 +4,74 @@ from api.coinapi_v1 import CoinAPIv1
 from datetime import datetime, date, time
 import dateutil.parser
 
-#TODO: transform it to class?
-def main_import():
 
-    def get_symbol(symbol_id):
+# TODO: transform it to class?
+
+class MainImport(object):
+
+    session = models.Session()
+
+    api_key = 'E696601D-F684-4237-A4DC-E3BF94A959D2'
+
+    api = CoinAPIv1(api_key)
+
+    def get_symbol(self, symbol_id):
         #TODO: chagne it to findOne
-        result = session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_id).all()
+        result = self.session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_id).all()
         if len(result) > 0:
             return result[0]
         return -1
 
-    def get_symbol_id(symbol_id):
+    def get_symbol_id(self, symbol_id):
         #TODO: chagne it to findOne
-        result = session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_id).all()
+        result = self.session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_id).all()
         if len(result) > 0:
             return result[0].id
         return -1
 
-
-    def insert_symbol(symbol_id, mark_id=-1, base_cryptocurrency_id=-1, quote_cryptocurrency_id=-1):
-        if session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_id).count() == 0:
+    def insert_symbol(self, symbol_id, mark_id=-1, base_cryptocurrency_id=-1, quote_cryptocurrency_id=-1):
+        if self.session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_id).count() == 0:
             sym = models.Symbol(id)
-            sym.mark_id = get_market_id_by_name(mark_id)
+            sym.mark_id = self.get_market_id_by_name(mark_id)
             sym.symbol_global_id = symbol_id
-            sym.base_cryptocurrency_id = get_cryptocurrency_id(base_cryptocurrency_id)
-            sym.quote_cryptocurrency_id = get_cryptocurrency_id(quote_cryptocurrency_id)
-            session.add(sym)
-            session.commit()
+            sym.base_cryptocurrency_id = self.get_cryptocurrency_id(base_cryptocurrency_id)
+            sym.quote_cryptocurrency_id = self.get_cryptocurrency_id(quote_cryptocurrency_id)
+            self.session.add(sym)
+            self.session.commit()
             return True
 
-
-    def get_cryptocurrency_id(name_id):
+    def get_cryptocurrency_id(self, name_id):
         # TODO: chagne it to findOne
-        result = session.query(models.Cryptocurrency).filter(models.Cryptocurrency.name_id.in_([name_id])).all()
+        result = self.session.query(models.Cryptocurrency).filter(models.Cryptocurrency.name_id.in_([name_id])).all()
         if len(result) > 0:
             return result[0].id
         return -1
 
-
-    def insert_cryptocurrency(name, name_id):
-        if session.query(models.Cryptocurrency).filter(models.Cryptocurrency.name_id == name_id).count() == 0:
+    def insert_cryptocurrency(self, name, name_id):
+        if self.session.query(models.Cryptocurrency).filter(models.Cryptocurrency.name_id == name_id).count() == 0:
             cur = models.Cryptocurrency(name)
             cur.name_id = name_id
-            session.add(cur)
-            session.commit()
+            self.session.add(cur)
+            self.session.commit()
             return True
 
-
-    def get_market_id_by_name(name):
-        result = session.query(models.Mark).filter(models.Mark.exchange_global_id == name).all()
+    def get_market_id_by_name(self, name):
+        result = self.session.query(models.Mark).filter(models.Mark.exchange_global_id == name).all()
         if len(result) > 0:
             return result[0].id
         return 0
 
-
-    def insert_market(name, api_url, website, id=-1):
-        if session.query(models.Mark).filter(models.Mark.name.in_([name])).count() == 0:
+    def insert_market(self, name, api_url, website, id=-1):
+        if self.session.query(models.Mark).filter(models.Mark.name.in_([name])).count() == 0:
             mark = models.Mark(name)
             mark.api_url = api_url
             mark.website = website
             mark.exchange_global_id = id
-            session.add(mark)
-            session.commit()
+            self.session.add(mark)
+            self.session.commit()
             return True
 
-    def insert_history(ohlcv, symbol, base_currency_id, quote_currency_id):
+    def insert_history(self, ohlcv, symbol, base_currency_id, quote_currency_id):
         #TODO: do this get_cryptocurrency_id only one time id use symbols
         # TODO: flush data for the first
         # now only for BITSTAMP_SPOT_BTC_USD
@@ -85,67 +88,66 @@ def main_import():
         ohlcv_new.quote_currency_id = quote_currency_id
         ohlcv_new.symbol_id = symbol
         #mark_id =
-        session.add(ohlcv_new)
-        session.commit()
+        self.session.add(ohlcv_new)
+        self.session.commit()
         return True
 
+    # def insertExchange(self, mark_id, base_cur_id, quote_cur_id, time_exchange, rate):
+    #     ex = models.Exchange(name)
+    #     ex.mark_id = mark_id
+    #     ex.base_cur_id = base_cur_id
+    #     ex.quote_cur_id = quote_cur_id
+    #     ex.time_exchange = time_exchange
+    #     ex.rate = rate
+    #     self.session.add(ex)
+    # #    self.session.commit()
+    # #    return(self.session.query(models.Exchange).filter(models.Exchange.name_id.in_([name_id])).all()[0].id)
+    #
+    # def insertTrade(self, time, price, size, type, base_cur_id, quote_cur_id, market_id):
+    #     tr = models.Trade(name)
+    #     tr.time = time
+    #     tr.price = price
+    #     tr.size = size
+    #     tr.type = type  # das ist immer true, da eigentlich unnötig
+    #     tr.base_cur_id = base_cur_id
+    #     tr.quote_cur_id = quote_cur_id
+    #     tr.market_id = market_id
+    #     self.session.add(tr)
+    # #   self.session.commit()
+    #
+    # def insert_orderbook(self, time, price, size, type, base_cur_id, quote_cur_id, market_id):
+    #     tr = models.Orderbook(name)
+    #     tr.time = time
+    #     tr.price = price
+    #     tr.size = size
+    #     tr.type = type
+    #     tr.base_cur_id = base_cur_id
+    #     tr.quote_cur_id = quote_cur_id
+    #     tr.market_id = market_id
+    #     self.session.add(tr)
+    #self.session.commit()
 
-    def insertExchange(mark_id, base_cur_id, quote_cur_id, time_exchange, rate):
-        ex = models.Exchange(name)
-        ex.mark_id = mark_id
-        ex.base_cur_id = base_cur_id
-        ex.quote_cur_id = quote_cur_id
-        ex.time_exchange = time_exchange
-        ex.rate = rate
-        session.add(ex)
-    #    session.commit()
-    #    return(session.query(models.Exchange).filter(models.Exchange.name_id.in_([name_id])).all()[0].id)
-
-    def insertTrade(time, price, size, type, base_cur_id, quote_cur_id, market_id):
-        tr = models.Trade(name)
-        tr.time = time
-        tr.price = price
-        tr.size = size
-        tr.type = type  # das ist immer true, da eigentlich unnötig
-        tr.base_cur_id = base_cur_id
-        tr.quote_cur_id = quote_cur_id
-        tr.market_id = market_id
-        session.add(tr)
-    #   session.commit()
-
-    def insert_orderbook(time, price, size, type, base_cur_id, quote_cur_id, market_id):
-        tr = models.Orderbook(name)
-        tr.time = time
-        tr.price = price
-        tr.size = size
-        tr.type = type
-        tr.base_cur_id = base_cur_id
-        tr.quote_cur_id = quote_cur_id
-        tr.market_id = market_id
-        session.add(tr)
-    #session.commit()
-
-    def update_exchanges(api):
-        exchanges = api.metadata_list_exchanges()
+    def update_exchanges(self):
+        exchanges = self.api.metadata_list_exchanges()
 
         # Start of import
         print('Import Exchanges (Markets)')
         for exchange in exchanges:
-            insert_market(exchange['name'], 'coinapi', exchange['website'], exchange['exchange_id'])
+            self.insert_market(exchange['name'], 'coinapi', exchange['website'], exchange['exchange_id'])
 
-    def update_currencies(api):
-        assets = api.metadata_list_assets()
+    def update_currencies(self):
+        assets = self.api.metadata_list_assets()
         print('import Assets (Currencies)')
         for asset in assets:
-            insert_cryptocurrency(asset['name'], asset['asset_id'])
+            self.insert_cryptocurrency(asset['name'], asset['asset_id'])
 
-    def update_symbols(api):
-        symbols = api.metadata_list_symbols()
+    def update_symbols(self):
+        symbols = self.api.metadata_list_symbols()
         print('import Symbols (Currency-Pairs/Market)')
         # TODO Batch insert
         for symbol in symbols:
             if (symbol['symbol_type'] == 'SPOT'):
-                insert_symbol(symbol['symbol_id'], symbol['exchange_id'], symbol['asset_id_base'],
+                self.insert_symbol(symbol['symbol_id'], symbol['exchange_id'], symbol['asset_id_base'],
                               symbol['asset_id_quote'])
 
             if (symbol['symbol_type'] == 'FUTURES'):
@@ -158,48 +160,40 @@ def main_import():
                 print('Option exercise style: %s' % symbol['option_exercise_style'])
                 print('Option expiration time: %s' % symbol['option_expiration_time'])
 
-    def update_OHCL_histories(api, symbol):
+    def update_ohcl_histories(self, symbol):
         start_of_2018 = date(2018, 1, 1).isoformat()
         date_now = date.today().isoformat()
         #marketID = get_market_id_by_name('BITSTAMP')
 
-        symbol_from_db = get_symbol(symbol)
+        symbol_from_db = self.get_symbol(symbol)
         symbol_id = symbol_from_db.id
         base_currency_id = symbol_from_db.base_cryptocurrency_id
         quote_currency_id = symbol_from_db.quote_cryptocurrency_id
-        ohlcv_historical = api.ohlcv_historical_data(symbol, {
+        ohlcv_historical = self.api.ohlcv_historical_data(symbol, {
             'period_id': '1DAY',
             'time_start': start_of_2018,
             'time_end': date_now,
             'limit': 10000
         })
         for ohlcv in ohlcv_historical:
-            insert_history(ohlcv, symbol_id, base_currency_id, quote_currency_id)
+            self.insert_history(ohlcv, symbol_id, base_currency_id, quote_currency_id)
 
-    #Entrypoint
-    session = models.Session()
-    api_key = 'E696601D-F684-4237-A4DC-E3BF94A959D2'
+    def update_all_ohcl_histories(self):
+        self.update_OHCL_histories('BITSTAMP_SPOT_BTC_USD')
+        self.update_OHCL_histories('BITSTAMP_SPOT_ETH_USD')
+        self.update_OHCL_histories('BITSTAMP_SPOT_LTC_USD')
+        self.update_OHCL_histories('BITSTAMP_SPOT_XRP_USD')
+        self.update_OHCL_histories('KRAKEN_SPOT_ZEC_USD')
+        self.update_OHCL_histories('KRAKEN_SPOT_BTC_USD')
+        self.update_OHCL_histories('KRAKEN_SPOT_DASH_USD')
 
-    coin_api = CoinAPIv1(api_key)
-
-    #update_exchanges(coin_api)
-    #update_currencies(coin_api)
-    #update_symbols(coin_api)
-    update_OHCL_histories(coin_api, 'BITSTAMP_SPOT_BTC_USD')
-    update_OHCL_histories(coin_api, 'BITSTAMP_SPOT_ETH_USD')
-    update_OHCL_histories(coin_api, 'BITSTAMP_SPOT_LTC_USD')
-    update_OHCL_histories(coin_api, 'BITSTAMP_SPOT_XRP_USD')
-    update_OHCL_histories(coin_api, 'KRAKEN_SPOT_ZEC_USD')
-    update_OHCL_histories(coin_api, 'KRAKEN_SPOT_BTC_USD')
-    update_OHCL_histories(coin_api, 'KRAKEN_SPOT_DASH_USD')
-    return True
         # latest_trades = api.trades_latest_data_all()
         #
         # for data in latest_trades:
         #     sym = GetSymbol(data['symbol_id'])
         #     insertTrade(data['time_exchange'], data['price'], data['size'], true, sym.base_cryptocurrency_id,
         #                 sym.quote_cryptocurrency_id, sym.mark_id)
-        # session.commit()
+        # self.session.commit()
 
     ##latest_trades_doge = api.trades_latest_data_symbol('BITTREX_SPOT_BTC_DOGE')
     ##

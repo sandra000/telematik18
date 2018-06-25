@@ -431,6 +431,7 @@ class PageOne(tk.Frame):
         button1 = tk.Button(self, text="Home", command=lambda: controller.show_frame(StartPage))
         button1.pack()
 
+
 class BTCe_Page(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -454,12 +455,6 @@ class BTCe_Page(tk.Frame):
         # run animate every 2 seconds; beware: while the app is updating, the app becomes frozen
 
 
-def run_main_import():
-    result = api.main_import()
-    if result:
-        messagebox.showinfo("Result", "Done")
-
-
 class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
     # main controller
     # figure for old graph(live course)
@@ -467,6 +462,35 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
     LARGE_FONT = ("Verdana", 12)
     NORM_FONT = ("Verdana", 10)
     SMALL_FONT = ("Verdana", 8)
+    import_api = api.MainImport()
+
+    def run_main_import(self):
+        self.import_api.update_exchanges()
+        self.import_api.update_currencies()
+        self.import_api.update_symbols()
+        result = self.import_api.update_all_ohcl_histories()
+        if result:
+            messagebox.showinfo("Result", "Import is completed")
+
+    def run_import_exchanges(self):
+        result = self.import_api.update_exchanges()
+        if result:
+            messagebox.showinfo("Result", "Import is completed")
+
+    def run_import_currencies(self):
+        result = self.import_api.update_currencies()
+        if result:
+            messagebox.showinfo("Result", "Import is completed")
+
+    def run_import_symbols(self):
+        result = self.import_api.update_symbols()
+        if result:
+            messagebox.showinfo("Result", "Import is completed")
+
+    def run_import_history_data(self):
+        result = self.import_api.update_all_ohcl_histories()
+        if result:
+            messagebox.showinfo("Result", "Import is completed")
 
     def __init__(self, *args, **kwargs):
 
@@ -502,7 +526,11 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
         menubar.add_cascade(label="File", menu=filemenu)
 
         api_menu = tk.Menu(menubar, tearoff=1)
-        api_menu.add_command(label="Import data", command=lambda: run_main_import())
+        api_menu.add_command(label="Import exchanges", command=lambda: self.run_import_exchanges())
+        api_menu.add_command(label="Import currencies", command=lambda: self.run_import_currencies())
+        api_menu.add_command(label="Import symbols", command=lambda: self.run_import_symbols())
+        api_menu.add_command(label="Import history data", command=lambda: self.run_import_history_data())
+        api_menu.add_command(label="Import all", command=lambda: self.run_main_import())
         menubar.add_cascade(label="API", menu=api_menu)
 
         correlation_menu = tk.Menu(menubar, tearoff=1)
