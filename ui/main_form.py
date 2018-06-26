@@ -373,52 +373,16 @@ class StartPage(tk.Frame):
         # dont pass the function directly to command as command=qf("text").
         # The function will be executed once and not again.
         # To be able to run the function every time the button is pressed, use lambda:
-        button444 = tk.Button(self, text="test", command=lambda: self.dialogo())
         button2 = tk.Button(self, text="Disagree", command=quit)
         button1.pack()
-        button444.pack()
         button2.pack()
         self.valor = tk.StringVar()
         self.valor.set("Hola Manejando datos") # ?????? why we need this
         tk.Label(self, textvariable=self.valor).pack()
 
-    def dialogo(self):
-        d = MyDialog(self, self.valor, "Probando Dialogo", "Dame valor")
-        self.wait_window(d.top)
-        # self.valor.set(d.ejemplo)
-
         # #TODO: we dont use this
         # button2 = tk.Button(self, text="Page Two", command=lambda: controller.show_frame(PageTwo))
         # button2.pack()
-
-
-class MyDialog:
-    def __init__(self, parent, valor, title, labeltext=''):
-        self.valor = valor
-
-        self.top = tk.Toplevel(parent)
-        self.top.transient(parent)
-        self.top.grab_set()
-        if len(title) > 0: self.top.title(title)
-        if len(labeltext) == 0: labeltext = 'Valor'
-        tk.Label(self.top, text=labeltext).pack()
-        self.top.bind("<Return>", self.ok)
-        self.e = tk.Entry(self.top, text=valor.get())
-        self.e.bind("<Return>", self.ok)
-        self.e.bind("<Escape>", self.cancel)
-        self.e.pack(padx=15)
-        self.e.focus_set()
-        b = tk.Button(self.top, text="OK", command=self.ok)
-        b.pack(pady=5)
-
-    def ok(self, event=None):
-        print("Has escrito ...", self.e.get())
-        self.valor.set(self.e.get())
-        self.top.destroy()
-
-    def cancel(self, event=None):
-        self.top.destroy()
-
 
 # reference to how to create a new page
 class PageOne(tk.Frame):
@@ -633,7 +597,7 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
 
         a = self.f.add_subplot(111)
         # THIS is life animation
-        ani = animation.FuncAnimation(self.f, FrameLiveCourse, fargs=[a], interval=1000)
+        # ani = animation.FuncAnimation(self.f, FrameLiveCourse, fargs=[a], interval=1000)
         self.f.canvas.draw()
         self.show_frame(StartPage)
 

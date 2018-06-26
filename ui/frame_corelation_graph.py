@@ -9,11 +9,15 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 
 class CorrelationGraphFrame(tk.Frame):
     figureCorelation = plt.figure()
+    valor = tk.StringVar()
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         label = tk.Label(self, text="Corelation graph", font=controller.LARGE_FONT)
         label.pack(pady=5,padx=5)
+        button444 = tk.Button(self, text="test", command=lambda: self.dialogo())
+        button444.pack(side='right')
+
         a = self.figureCorelation.add_subplot(111)
 
         #TODO: fix this
@@ -45,6 +49,39 @@ class CorrelationGraphFrame(tk.Frame):
         toolbar.update()
         canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
+        self.valor.set("Hola Manejando datos")  # ?????? why we need this
+        tk.Label(self, textvariable=self.valor).pack()
+
+        # for pick in picks:
+        #     var = tk.IntVar()
+        #     self.vars.append(var)
+        self.selected_symbols = Checkbar(self,
+                                         ['BITSTAMP_SPOT_BTC_USD', 'BITSTAMP_SPOT_ETH_USD', 'BITSTAMP_SPOT_LTC_USD',
+                                          'BITSTAMP_SPOT_XRP_USD', 'KRAKEN_SPOT_ZEC_USD', 'KRAKEN_SPOT_BTC_USD',
+                                          'KRAKEN_SPOT_DASH_USD'])
+        self.selected_symbols.pack(side='top', fill='x')
+        self.selected_symbols.config(relief='groove', bd=2)
+        self.test_var = tk.IntVar()
+        side = 'left',
+        anchor = 'w'
+        chk = tk.Checkbutton(self, text='test', variable=self.test_var, command=self.cb())
+        chk.pack(side=side, anchor=anchor, expand='yes')
+
+    def cb(self):
+        print
+        "variable is", self.test_var.get()
+
+    def update(self):
+        return True
+
+    def dialogo(self):
+        print(list(self.selected_symbols.state()))
+        print(self.test_var.get())
+
+        # d = MyDialog(self, self.valor, "Select the parameter", "Select")
+        # self.wait_window(d.top)
+        # self.valor.set(d.ejemplo)
+
     def get_correlation(self):
         #TODO: sort the history list
         history = HistoryController.History()
@@ -70,3 +107,52 @@ class CorrelationGraphFrame(tk.Frame):
                 output_arr.append(coef[0,1])
             output_pd.loc[currency_name] = output_arr
         return output_pd
+
+
+class MyDialog(tk.Frame):
+    def __init__(self, parent, valor, title, labeltext='', list_of_symbol_var=[]):
+        self.valor = valor
+
+        self.top = tk.Toplevel(parent)
+        self.top.transient(parent)
+        self.top.grab_set()
+        if len(title) > 0: self.top.title(title)
+        if len(labeltext) == 0: labeltext = 'Valor'
+        tk.Label(self.top, text=labeltext).pack()
+        self.top.bind("<Return>", self.ok)
+        self.e = tk.Entry(self.top, text=valor.get())
+        self.e.bind("<Return>", self.ok)
+        self.e.bind("<Escape>", self.cancel)
+        self.e.pack(padx=15)
+        self.e.focus_set()
+        b = tk.Button(self.top, text="OK", command=self.ok)
+        b.pack(pady=5)
+
+
+
+        # for var in list_of_symbol_vars:
+        #     tk.Checkbutton(self, text="male", variable=var).grid(row=0, sticky=W)
+
+    def ok(self, event=None):
+        print("Has escrito ...", self.e.get())
+        self.valor.set(self.e.get())
+        self.top.destroy()
+
+
+    def cancel(self, event=None):
+        self.top.destroy()
+
+
+class Checkbar(tk.Frame):
+
+    def __init__(self, parent=None, picks=[], side='left', anchor='w'):
+        tk.Frame.__init__(self, parent)
+        self.vars = []
+        for pick in picks:
+            var = tk.IntVar()
+            chk = tk.Checkbutton(self, text=pick, variable=var)
+            chk.pack(side=side, anchor=anchor, expand='yes')
+            self.vars.append(var)
+
+    def state(self):
+        return map((lambda var: var.get()), self.vars)
