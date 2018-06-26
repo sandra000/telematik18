@@ -1,6 +1,10 @@
 /**/.Thumbs.db
 /**/.DS_Store
 
+*.pyc
+*.suo
+*.pyproj
+*.sln
 .idea
 logs
 target
