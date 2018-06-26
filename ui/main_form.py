@@ -13,6 +13,7 @@ from ui import CorrelationFrame
 from ui import HistoryDataFrame
 from ui import CryptocurrencyDataFrame
 from ui import ExchangeDataFrame
+from ui import ImportHistoryFrame
 from ui import SymbolDataFrame
 from ui import CorrelationGraphFrame
 
@@ -488,6 +489,7 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
         api_menu.add_command(label="Import currencies", command=lambda: self.run_import_currencies())
         api_menu.add_command(label="Import symbols", command=lambda: self.run_import_symbols())
         api_menu.add_command(label="Import history data", command=lambda: self.run_import_history_data())
+        api_menu.add_command(label="Import History Form", command=lambda: self.show_frame(ImportHistoryFrame))
         api_menu.add_command(label="Import all", command=lambda: self.run_main_import())
         menubar.add_cascade(label="API", menu=api_menu)
 
@@ -590,7 +592,7 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
             # if you dont use a row, default is the first unused row in the grid
             # http://effbot.org/tkinterbook/grid.htm for more grid() options
 
-        for F in (HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame, CorrelationGraphFrame):
+        for F in (HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame, CorrelationGraphFrame, ImportHistoryFrame):
             frame = F(container, self)  # main page
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")

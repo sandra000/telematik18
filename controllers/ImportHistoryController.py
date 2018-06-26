@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 
 
-class Exchange(object):
+class ImportHistory(object):
 
     session = models.Session()
 
-    def get_all(self): 
-        query = self.session.query(models.Mark)
+    def get_Exchanges(self):
+        query = "SELECT * FROM Mark"#self.session.query(models.Mark)
         return pd.read_sql(query.statement, self.session.bind)
