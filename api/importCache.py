@@ -3,6 +3,7 @@ import models
 from api.coinapi_v1 import CoinAPIv1
 from datetime import datetime, date, time
 import dateutil.parser
+from sqlalchemy import func
 
 
 class MainImport(object):
@@ -51,6 +52,16 @@ class MainImport(object):
             self.session.commit()
             return True
 
+    def insert_paramter(self, period_id,time_start,time_end,limit):
+        cur = models.Parameter()
+        cur.period_id = period_id
+        cur.time_start=time_start
+        cur.time_end=time_end
+        cur.limit=limit
+        self.session.add(cur)
+        self.session.commit()
+        return models.Symbol.symbol_global_id == self.session.query(func.max(models.Parameter.id)).scalar()
+
     def get_market_id_by_name(self, name):
         result = self.session.query(models.Mark).filter(models.Mark.exchange_global_id == name).first()
         if result:
@@ -67,7 +78,7 @@ class MainImport(object):
             self.session.commit()
             return True
 
-    def insert_history(self, ohlcv, symbol, base_currency_id, quote_currency_id):
+    def insert_history(self, ohlcv, symbol, base_currency_id, quote_currency_id,parameter):
         #TODO: do this get_cryptocurrency_id only one time id use symbols
         # TODO: flush data for the first
         # now only for BITSTAMP_SPOT_BTC_USD
@@ -83,6 +94,9 @@ class MainImport(object):
         ohlcv_new.base_currency_id = base_currency_id
         ohlcv_new.quote_currency_id = quote_currency_id
         ohlcv_new.symbol_id = symbol
+        #ohlcv_new.parameter_id=parameter
+        #print('P:')
+        #print(parameter)
         #mark_id =
         self.session.add(ohlcv_new)
         self.session.commit()
@@ -130,16 +144,17 @@ class MainImport(object):
     
         symbol_from_db = self.get_symbol(symbol)
         symbol_id = symbol_from_db.id
+        parameter=self.insert_paramter(period,start_time,end_time,limit)
         base_currency_id = symbol_from_db.base_cryptocurrency_id
         quote_currency_id = symbol_from_db.quote_cryptocurrency_id
         ohlcv_historical = self.api.ohlcv_historical_data(symbol, {
             'period_id': period,
             'time_start': start_time, #start_of_2018,
-            'time_end': date_now,
+            'time_end': end_time,
             'limit': limit
         })
         for ohlcv in ohlcv_historical:
-            self.insert_history(ohlcv, symbol_id, base_currency_id, quote_currency_id)
+            self.insert_history(ohlcv, symbol_id, base_currency_id, quote_currency_id,parameter)
 
     def update_all_ohcl_histories(self):
         self.update_ohcl_histories('BITSTAMP_SPOT_BTC_USD')

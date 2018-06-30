@@ -1,7 +1,9 @@
 import tkinter as tk
+import datetime
 from pandastable import Table, TableModel
 from controllers import Exchange
 from controllers import Cryptocurrency
+from api import MainImport
 
 
 class ImportHistoryFrame(tk.Frame):
@@ -34,11 +36,11 @@ class ImportHistoryFrame(tk.Frame):
         self.selectedPeriod=tk.StringVar(self)
         self.selectedPeriod.set('1DAY')
         self.draw_elements()
-
+        self.importAPI=MainImport()
    
     def draw_elements(self):
         #Select Exchange
-        self.popupMenu = tk.OptionMenu(self, self.selectedExchange, *self.exchanges,  command=self.change_dropdown_exchange)
+        self.popupMenu = tk.OptionMenu(self, self.selectedExchange, *self.exchanges,  command=self.change_dropdown_exchange) 
         self.popupMenu.pack()
         #Select Base Cur
         self.popupMenu2 = tk.OptionMenu(self, self.selectedBaseCur, *self.baseCurs,  command=self.change_dropdown_base_cur)
@@ -53,6 +55,12 @@ class ImportHistoryFrame(tk.Frame):
         self.button = tk.Button(self, text="Import", width=10, command=self.start_import)
         self.button.pack()
 
+        #print(cal.selection_get())
+        
+        #self.startDate=datetime.datetime.now()
+        #self.calStart = tk.ttk. .Calendar(self, font="Arial 14", selectmode='day', cursor="hand1",year=self.startDate.year, month=self.startDate.month, day=self.startDate.day)
+        #self.calStart.pack(fill="both", expand=True)
+
     def remove_elements(self):
         self.popupMenu.destroy()
         self.popupMenu2.destroy()
@@ -60,7 +68,9 @@ class ImportHistoryFrame(tk.Frame):
         self.popupMenu4.destroy()
         self.button.destroy()
     def start_import(self):
-        print(self.selectedExchange.get())
+        #importiert wird ab dem 1.1.2018, maximal jedoch 10000 Einträge
+        symbol=self.selectedExchange.get() + "_SPOT_" + self.selectedBaseCur.get() + "_" + self.selectedQuoteCur.get()
+        self.importAPI.update_ohcl_histories(symbol,self.selectedPeriod.get())
         
     def change_dropdown_exchange(self, *args):
         self.get_base_curs()
