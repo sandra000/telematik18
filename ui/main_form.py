@@ -368,15 +368,15 @@ class StartPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)  # StartPages's parent is the MainForm class
-        label = tk.Label(self, text="Cryptocurrencies \nTrading Analyse", font=LARGE_FONT)  # like the JavaFX label
-        label.pack(pady=10, padx=10)  # if you have 1,2 or 3 elements, use pack. Otherwise, use grid()
-        button1 = tk.Button(self, text="Agree", command=lambda: controller.show_frame(BTCe_Page))
+        #label = tk.Label(self, text="Cryptocurrencies \nTrading Analyse", font=LARGE_FONT)  # like the JavaFX label
+        #label.pack(pady=10, padx=10)  # if you have 1,2 or 3 elements, use pack. Otherwise, use grid()
+        #button1 = tk.Button(self, text="Agree", command=lambda: controller.show_frame(BTCe_Page))
         # dont pass the function directly to command as command=qf("text").
         # The function will be executed once and not again.
         # To be able to run the function every time the button is pressed, use lambda:
-        button2 = tk.Button(self, text="Disagree", command=quit)
-        button1.pack()
-        button2.pack()
+        #button2 = tk.Button(self, text="Disagree", command=quit)
+        #button1.pack()
+        #button2.pack()
         self.valor = tk.StringVar()
         self.valor.set("Hola Manejando datos") # ?????? why we need this
         tk.Label(self, textvariable=self.valor).pack()
