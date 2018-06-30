@@ -1,6 +1,6 @@
 import tkinter as tk
 from pandastable import Table, TableModel
-from controllers import ImportHistory
+from controllers import Exchange
 
 
 class ImportHistoryFrame(tk.Frame):
@@ -15,10 +15,10 @@ class ImportHistoryFrame(tk.Frame):
         w.pack()
         w = tk.Label(self, text="Exchange")
         w.pack()
-        importHistoryClontroller=ImportHistory()
+        exchangeClontroller=Exchange()
         #Select Exchange
         selectedExchange = tk.StringVar(self)
-        exchanges=self.get_exchanges(importHistoryClontroller,selectedExchange)
+        exchanges=self.get_exchanges(exchangeClontroller,selectedExchange)
         popupMenu = tk.OptionMenu(self, selectedExchange, *exchanges)
         popupMenu.pack()
         #tk.Label(mainframe, text="Choose Exchange").grid(row = 1, column = 1)
@@ -27,8 +27,8 @@ class ImportHistoryFrame(tk.Frame):
         # on change dropdown value
     def change_dropdown(self, *args):
         print(selectedExchange)
-    def get_exchanges(self,importHistoryClontroller,selectedExchange):
-        exchangeNames=importHistoryClontroller.get_Exchanges()
+    def get_exchanges(self,exchangeClontroller,selectedExchange):
+        exchangeNames=exchangeClontroller.get_all()
         result=set()
         for i in range(0,len(exchangeNames)-1):
             result.add(exchangeNames.name[i])
