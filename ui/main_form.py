@@ -15,6 +15,8 @@ from ui import CryptocurrencyDataFrame
 from ui import ExchangeDataFrame
 from ui import SymbolDataFrame
 from ui import CorrelationGraphFrame
+from ui import AutocorrelationGraphFrame
+from ui import OhlcGraphFrame
 
 session = models.Session()
 
@@ -493,7 +495,9 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
 
         correlation_menu = tk.Menu(menubar, tearoff=1)
         correlation_menu.add_command(label="Correlation", command=lambda: self.show_frame(CorrelationFrame))
-        correlation_menu.add_command(label="Correaltion graph", command=lambda: self.show_frame(CorrelationGraphFrame))
+        correlation_menu.add_command(label="Correlation chart", command=lambda: self.show_frame(CorrelationGraphFrame))
+        correlation_menu.add_command(label="Autocorrelation chart", command=lambda: self.show_frame(AutocorrelationGraphFrame))
+        correlation_menu.add_command(label="Candlestick chart", command=lambda: self.show_frame(OhlcGraphFrame))
         menubar.add_cascade(label="Windows", menu=correlation_menu)
 
         data_menu = tk.Menu(menubar, tearoff=1)
@@ -590,7 +594,7 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
             # if you dont use a row, default is the first unused row in the grid
             # http://effbot.org/tkinterbook/grid.htm for more grid() options
 
-        for F in (HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame, CorrelationGraphFrame):
+        for F in (HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame, CorrelationGraphFrame, AutocorrelationGraphFrame, OhlcGraphFrame):
             frame = F(container, self)  # main page
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
