@@ -45,19 +45,20 @@ class OhlcGraphFrame(tk.Frame):
 
         df = historydata_grouped.get_group(bitcoin_name)
         df['date'] = df['start_time_exchange'].map(mdates.date2num)
+        df = df.loc[df['symbol_id'] == 16]
         ohlc = df[['date', 'ask_price', 'ask_price_high', 'ask_price_low', 'ask_price_last']]
         candlestick_ohlc(self.a, ohlc.values, width=.6, colorup='green', colordown='red')
         self.a.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
 
         #moving averages
         df['ema20'] = df['ask_price_last'].ewm(span=20, adjust=False).mean()
-        df['ema100'] = df['ask_price_last'].ewm(span=100, adjust=False).mean()
+        df['ema50'] = df['ask_price_last'].ewm(span=50, adjust=False).mean()
 
         # correct for starting period errors
         #df = df[df.index > '2015-5-31']
 
         self.a.plot(df['date'], df['ema20'], color='blue', label='Moving Average 20 days')
-        self.a.plot(df['date'], df['ema100'], color='purple', label='Moving Average 100 days')
+        self.a.plot(df['date'], df['ema50'], color='purple', label='Moving Average 50 days')
 
         self.a.grid(False)
         self.a.legend()
