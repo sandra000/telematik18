@@ -42,8 +42,27 @@ class CorrelationGraphFrame(tk.Frame):
         for short_symbol in self.symbol_selected_list:
             mb.menu.add_checkbutton(label=short_symbol.symbol_global_id, variable=short_symbol.var)
 
+#TODO create separate frame
+        # scrollbar = tk.Scrollbar(self)
+        # scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        #
+        # listbox = tk.Listbox(self)
+        # listbox.pack()
+        #
+        # listbox.config(yscrollcommand=scrollbar.set)
+        # scrollbar.config(command=listbox.yview)
+        #
+        #
+        # for short_symbol in self.symbol_selected_list:
+        #     listbox.insert(tk.END, short_symbol.symbol_global_id)
+
+        symbol_list = SymbolList(self, self.symbol_selected_list)
+        symbol_list.pack(side=tk.RIGHT, fill=tk.X)
+        symbol_list.config(relief=tk.GROOVE, bd=2)
+
         btn_show_selected = tk.Button(self, text="Print selected", command=self.item_test)
         btn_show_selected.pack(side=tk.RIGHT)
+
 
         history = HistoryController.History()
         historydata = history.get_all()
@@ -166,6 +185,22 @@ class CorrelationGraphFrame(tk.Frame):
 #         print(self.Item2.get())
 
 
+class SymbolList(tk.Frame):
+
+    def __init__(self, parent, symbol_selected_list, picks=[], side=tk.LEFT, anchor=tk.W):
+        tk.Frame.__init__(self, parent)
+
+        scrollbar = tk.Scrollbar(self)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        listbox = tk.Listbox(self, selectmode=tk.MULTIPLE)
+        listbox.pack()
+
+        listbox.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=listbox.yview)
+
+        for short_symbol in symbol_selected_list:
+            listbox.insert(tk.END, short_symbol.symbol_global_id)
 
 
 # class Checkbar(tk.Frame):
