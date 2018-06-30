@@ -4,6 +4,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 from pandastable import Table, TableModel
 from controllers import HistoryController
+import datetime
+from mpl_finance import candlestick_ohlc
+import matplotlib.dates as mdates
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 
 #Technical analysts can use autocorrelation to see how much of an impact past prices for a security have on
@@ -18,36 +21,49 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 
 
 
-class AutocorrelationGraphFrame(tk.Frame):
-    figureAutocorrelation = plt.figure()
+class OhlcGraphFrame(tk.Frame):
+    figureOhlcChart = plt.figure()
     valor = tk.StringVar()
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="BTC Autocorrelation graph\n Time unit is 1 day, lagged by 10 days", font=controller.LARGE_FONT)
+        label = tk.Label(self, text="BTC Candlestick Chart", font=controller.LARGE_FONT)
         label.pack(pady=5,padx=5)
-        self.a = self.figureAutocorrelation.add_subplot(111)
+        self.a = self.figureOhlcChart.add_subplot(111)
 
 
     def update(self):
-
-        #TODO: fix this
+        # TODO: fix this
         bitcoin_name = 1
         etherum_name = 3
         zcash_name = 17
-        history = HistoryController.History() #object for the databank endpoint
-        historydata = history.get_all() #dataframe
+        history = HistoryController.History()  # object for the databank endpoint
+        historydata = history.get_all()  # dataframe
         if historydata.values.size == 0:
             return
-        historydata_grouped = historydata.groupby('base_currency_id')
+        historydata_grouped = historydata.groupby('base_currency_id') #symbol_id
 
-        ask_price = historydata_grouped.get_group(bitcoin_name).ask_price
-        self.a.acorr(ask_price)
-        self.a.grid(True)
-        self.a.axhline(0, color='black', lw=2)
+        df = historydata_grouped.get_group(bitcoin_name)
+        df['date'] = df['start_time_exchange'].map(mdates.date2num)
+        df = df.loc[df['symbol_id'] == 16]
+        ohlc = df[['date', 'ask_price', 'ask_price_high', 'ask_price_low', 'ask_price_last']]
+        candlestick_ohlc(self.a, ohlc.values, width=.6, colorup='green', colordown='red')
+        self.a.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
 
+        #moving averages
+        df['ema20'] = df['ask_price_last'].ewm(span=20, adjust=False).mean()
+        df['ema50'] = df['ask_price_last'].ewm(span=50, adjust=False).mean()
 
-        canvas = FigureCanvasTkAgg(self.figureAutocorrelation, self)
+        # correct for starting period errors
+        #df = df[df.index > '2015-5-31']
+
+        self.a.plot(df['date'], df['ema20'], color='blue', label='Moving Average 20 days')
+        self.a.plot(df['date'], df['ema50'], color='purple', label='Moving Average 50 days')
+
+        self.a.grid(False)
+        self.a.legend()
+
+        canvas = FigureCanvasTkAgg(self.figureOhlcChart, self)
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
