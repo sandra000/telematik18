@@ -31,21 +31,22 @@ class CorrelationGraphFrame(tk.Frame):
         label.grid(row=0, columnspan=12)
 
         self.a = self.figureCorelation.add_subplot(111)
-        symbol = SymbolController.Symbol()
-        symboldata = symbol.get_all_as_list()
 
-        for symbol in symboldata:
-            item = SymbolSelect()
-            item.var = tk.BooleanVar(self)
-            item.symbol_global_id = symbol.symbol_global_id
-            self.symbol_selected_list.append(item)
+        history = HistoryController.History()
+        self.symbol_data = history.get_all_symbol_from_history()
+
+        # for symbol in symboldata:
+        #     item = SymbolSelect()
+        #     item.var = tk.BooleanVar(self)
+        #     item.symbol_global_id = symbol.symbol_global_id
+        #     self.symbol_selected_list.append(item)
 
     def update(self):
         bitcoin_name = 1
         etherum_name = 3
         zcash_name = 17
 
-        symbol_list = SymbolList(self, self.symbol_selected_list)
+        symbol_list = SymbolList(self, self.symbol_data)
         symbol_list.grid(row=1, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
         symbol_list.config(relief=tk.GROOVE, bd=2)
         symbol_list.print_selected()
