@@ -6,3 +6,6 @@ sqlalchemy
 certifi
 python-dateutil
 pandastable
+sklearn
+scikit-learn
+scipy

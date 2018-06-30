@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from controllers import HistoryController, SymbolController
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-
+from sklearn import preprocessing
 
 # naked object
 class SymbolSelect(object):
@@ -25,11 +25,18 @@ class CorrelationGraphFrame(tk.Frame):
             self.columnconfigure(col, weight=1)
             col += 1
         self.rowconfigure(0, weight=1)
-        self.rowconfigure(1, weight=1)
+        self.rowconfigure(1, weight=4)
         self.rowconfigure(2, weight=1)
+        self.rowconfigure(3, weight=1)
+        self.rowconfigure(4, weight=1)
 
         label = tk.Label(self, text="Corelation graph", font=controller.LARGE_FONT)
         label.grid(row=0, columnspan=12)
+        self.type = tk.IntVar(self)
+        self.type.set(1)
+        tk.Radiobutton(self, text="Normalize to bitcoin course", variable=self.type, value=1).grid(row=2, column=11)
+        tk.Radiobutton(self, text="Normalize auto", variable=self.type, command=self.ShowChoice, value=2).grid(row=3, column=11)
+        #).pack(anchor=W)
 
         self.a = self.figureCorelation.add_subplot(111)
 
@@ -41,8 +48,15 @@ class CorrelationGraphFrame(tk.Frame):
         self.symbol_list.config(relief=tk.GROOVE, bd=2)
 
         btn_update_selected = tk.Button(self, text="Update", command=self.renew)
-        btn_update_selected.grid(row=2, column=11)
+        btn_update_selected.grid(row=4, column=11)
 
+    #TODO: with render the frame call open:  if this first time than call update otherwise do nothing!!!
+    # nee to merge with bracnh from Sandra
+    # def open:
+    #     return True
+
+    def ShowChoice(self):
+        print(self.type.get())
     def update(self):
 
         self.a.cla()  # which clears data but not axes
@@ -60,28 +74,41 @@ class CorrelationGraphFrame(tk.Frame):
         history_data = history.get_by_symbol_id(base_symbol.id)
         if history_data.values.size == 0:
             return
-        self.a.plot(history_data.ask_price.values, color='red', label=bitcoin_name)
 
-        if len(symbol_selected):
-            base_max_price = history_data.ask_price.max()
-            for item in symbol_selected:
-                current_history_data = history.get_by_symbol_id(item.id)
-                current_max_price = current_history_data.ask_price.max()
-                coefficient_diff = base_max_price / current_max_price
-                current_price_normalise = current_history_data.ask_price.mul(coefficient_diff).values
-                self.a.plot(current_price_normalise, label=item.symbol_global_id)
+        if self.type.get() == 1:
+            self.a.plot(history_data.ask_price.values, color='red', label=bitcoin_name)
+
+            if len(symbol_selected):
+                base_max_price = history_data.ask_price.max()
+                for item in symbol_selected:
+                    current_history_data = history.get_by_symbol_id(item.id)
+                    current_max_price = current_history_data.ask_price.max()
+                    coefficient_diff = base_max_price / current_max_price
+                    current_price_normalise = current_history_data.ask_price.mul(coefficient_diff).values
+                    self.a.plot(current_price_normalise, label=item.symbol_global_id)
+        else:
+            if len(symbol_selected):
+                for item in symbol_selected:
+                    current_history_data = history.get_by_symbol_id(item.id)
+                    current_price_normalise = self.normalise(current_history_data)
+                    self.a.plot(current_price_normalise, label=item.symbol_global_id)
 
         self.a.legend()
 
         canvas = FigureCanvasTkAgg(self.figureCorelation, self)
-        canvas.get_tk_widget().grid(row=1, columnspan=11, sticky=(tk.N, tk.S, tk.E, tk.W))
+        canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=11, sticky=(tk.N, tk.S, tk.E, tk.W))
         canvas.draw()
 
-        toolbarFrame = tk.Frame(master=self)
-        toolbarFrame.grid(row=2, columnspan=11, sticky=tk.W)
-        toolbar = NavigationToolbar2TkAgg(canvas, toolbarFrame)
+        toolbar_frame = tk.Frame(master=self)
+        toolbar_frame.grid(row=4, columnspan=11, sticky=tk.W)
+        toolbar = NavigationToolbar2TkAgg(canvas, toolbar_frame)
         toolbar.update()
         return True
+
+    def normalise(self, data):
+        price_max = data.ask_price.max()
+        price_min = data.ask_price.min()
+        return np.array(list(map(lambda x: (x-price_min)/(price_max-price_min), data.ask_price.values)))
 
     def renew(self):
         self.symbol_selected = self.symbol_list.get_selection()
