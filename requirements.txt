@@ -7,3 +7,6 @@ certifi
 python-dateutil
 pandastable
 mpl_finance
+sklearn
+scikit-learn
+scipy

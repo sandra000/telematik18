@@ -21,10 +21,11 @@ class History(Base):
     ask_price_low = Column(Float)
     base_currency_id = Column(Integer, ForeignKey('cryptocurrencies.id'))
     quote_currency_id = Column(Integer, ForeignKey('cryptocurrencies.id'))
-    symbol_id = Column(Integer, ForeignKey('symbols.id'), nullable=True)
+    symbol_id = Column(Integer, ForeignKey('symbols.id'))
     mark_id = Column(Integer, ForeignKey('marks.id'), nullable=True)# this if we want to use something else as coinapi
     parameter_id = Column(Integer, ForeignKey('parameters.id'), nullable=True)
 
+    symbol = relationship(Symbol, primaryjoin=symbol_id == Symbol.id)
     base_currency = relationship(Cryptocurrency, primaryjoin=base_currency_id == Cryptocurrency.id)
     quote_currency = relationship(Cryptocurrency, primaryjoin=quote_currency_id == Cryptocurrency.id)
     parameter = relationship(Parameter, primaryjoin=parameter_id == Parameter.id)

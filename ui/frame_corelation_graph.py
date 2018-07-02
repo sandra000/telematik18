@@ -2,157 +2,143 @@ import tkinter as tk
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-from pandastable import Table, TableModel
-from controllers import HistoryController
+from controllers import HistoryController, SymbolController
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from sklearn import preprocessing
+
+# naked object
+class SymbolSelect(object):
+    pass
 
 
 class CorrelationGraphFrame(tk.Frame):
     figureCorelation = plt.figure()
     valor = tk.StringVar()
+    test_var = tk.IntVar()
+    symbol_selected = []
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        # set the grid size
+        col = 0
+        while col < 12:
+            self.columnconfigure(col, weight=1)
+            col += 1
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=4)
+        self.rowconfigure(2, weight=1)
+        self.rowconfigure(3, weight=1)
+        self.rowconfigure(4, weight=1)
+
         label = tk.Label(self, text="Corelation graph", font=controller.LARGE_FONT)
-        label.pack(pady=5,padx=5)
-        button444 = tk.Button(self, text="test", command=lambda: self.dialogo())
-        button444.pack(side='right')
+        label.grid(row=0, columnspan=12)
+        self.type = tk.IntVar(self)
+        self.type.set(1)
+        tk.Radiobutton(self, text="Normalize to bitcoin course", variable=self.type, value=1).grid(row=2, column=11)
+        tk.Radiobutton(self, text="Normalize auto", variable=self.type, command=self.ShowChoice, value=2).grid(row=3, column=11)
+        #).pack(anchor=W)
 
-        a = self.figureCorelation.add_subplot(111)
+        self.a = self.figureCorelation.add_subplot(111)
 
-        #TODO: fix this
-        bitcoin_name = 1
-        etherum_name = 3
-        zcash_name = 17
         history = HistoryController.History()
-        historydata = history.get_all()
-        if historydata.values.size == 0:
+        self.symbol_data = history.get_all_symbol_from_history()
+
+        self.symbol_list = SymbolList(self, self.symbol_data)
+        self.symbol_list.grid(row=1, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.symbol_list.config(relief=tk.GROOVE, bd=2)
+
+        btn_update_selected = tk.Button(self, text="Update", command=self.renew)
+        btn_update_selected.grid(row=4, column=11)
+
+    #TODO: with render the frame call open:  if this first time than call update otherwise do nothing!!!
+    # nee to merge with bracnh from Sandra
+    # def open:
+    #     return True
+
+    def ShowChoice(self):
+        print(self.type.get())
+    def update(self):
+
+        self.a.cla()  # which clears data but not axes
+        #self.a.clf()  # which clears data and axes
+
+        symbol_selected = self.symbol_selected
+        bitcoin_name = "BITSTAMP_SPOT_BTC_USD"
+
+        # for the first time we will compare all currencies with bitcoin as base currency
+        base_symbol = list(filter(lambda x: x.symbol_global_id == bitcoin_name, self.symbol_data))[0]
+
+        history = HistoryController.History()
+
+        # draw base history base currency/symbol data
+        history_data = history.get_by_symbol_id(base_symbol.id)
+        if history_data.values.size == 0:
             return
-        historydata_grouped = historydata.groupby('base_currency_id')
-        bitcoin_max_price = historydata_grouped.get_group(bitcoin_name).ask_price.max()
-        etherum_max_price = historydata_grouped.get_group(etherum_name).ask_price.max()
-        zcash_max_price = historydata_grouped.get_group(zcash_name).ask_price.max()
-        coeficeint_diff = bitcoin_max_price / etherum_max_price
-        coeficeint_diff2 = bitcoin_max_price / zcash_max_price
-        etherum_ask_price_normalise = historydata_grouped.get_group(etherum_name).ask_price.mul(coeficeint_diff).values
-        a.plot(historydata_grouped.get_group(bitcoin_name).ask_price.values, color='red', label='bitcoin')
-        a.plot(etherum_ask_price_normalise, color='blue', label='ethereum')
-        #plot(bitcoin_name, etherum_name, data=historydata_grouped)
-        #matplotlib.pyplot.annotate(*args, **kwargs)
-        #matplotlib.pyplot.arrow(x, y, dx, dy, hold=None, **kwargs)¶
+
+        if self.type.get() == 1:
+            self.a.plot(history_data.ask_price.values, color='red', label=bitcoin_name)
+
+            if len(symbol_selected):
+                base_max_price = history_data.ask_price.max()
+                for item in symbol_selected:
+                    current_history_data = history.get_by_symbol_id(item.id)
+                    current_max_price = current_history_data.ask_price.max()
+                    coefficient_diff = base_max_price / current_max_price
+                    current_price_normalise = current_history_data.ask_price.mul(coefficient_diff).values
+                    self.a.plot(current_price_normalise, label=item.symbol_global_id)
+        else:
+            if len(symbol_selected):
+                for item in symbol_selected:
+                    current_history_data = history.get_by_symbol_id(item.id)
+                    current_price_normalise = self.normalise(current_history_data)
+                    self.a.plot(current_price_normalise, label=item.symbol_global_id)
+
+        self.a.legend()
 
         canvas = FigureCanvasTkAgg(self.figureCorelation, self)
+        canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=11, sticky=(tk.N, tk.S, tk.E, tk.W))
         canvas.draw()
-        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
-        toolbar = NavigationToolbar2TkAgg(canvas, self)
+        toolbar_frame = tk.Frame(master=self)
+        toolbar_frame.grid(row=4, columnspan=11, sticky=tk.W)
+        toolbar = NavigationToolbar2TkAgg(canvas, toolbar_frame)
         toolbar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-        self.valor.set("Hola Manejando datos")  # ?????? why we need this
-        tk.Label(self, textvariable=self.valor).pack()
-
-        # for pick in picks:
-        #     var = tk.IntVar()
-        #     self.vars.append(var)
-        self.selected_symbols = Checkbar(self,
-                                         ['BITSTAMP_SPOT_BTC_USD', 'BITSTAMP_SPOT_ETH_USD', 'BITSTAMP_SPOT_LTC_USD',
-                                          'BITSTAMP_SPOT_XRP_USD', 'KRAKEN_SPOT_ZEC_USD', 'KRAKEN_SPOT_BTC_USD',
-                                          'KRAKEN_SPOT_DASH_USD'])
-        self.selected_symbols.pack(side='top', fill='x')
-        self.selected_symbols.config(relief='groove', bd=2)
-        self.test_var = tk.IntVar()
-        side = 'left',
-        anchor = 'w'
-        chk = tk.Checkbutton(self, text='test', variable=self.test_var, command=self.cb())
-        chk.pack(side=side, anchor=anchor, expand='yes')
-
-    def cb(self):
-        print
-        "variable is", self.test_var.get()
-
-    def update(self):
         return True
 
-    def dialogo(self):
-        print(list(self.selected_symbols.state()))
-        print(self.test_var.get())
+    def normalise(self, data):
+        price_max = data.ask_price.max()
+        price_min = data.ask_price.min()
+        return np.array(list(map(lambda x: (x-price_min)/(price_max-price_min), data.ask_price.values)))
 
-        # d = MyDialog(self, self.valor, "Select the parameter", "Select")
-        # self.wait_window(d.top)
-        # self.valor.set(d.ejemplo)
-
-    def get_correlation(self):
-        #TODO: sort the history list
-        history = HistoryController.History()
-        historydata = history.get_all()
-        all_base_cuurencies = history.get_all_base_currency_from_history()
-        historydata_grouped = historydata.groupby('base_currency_id')
-        currency_list = []
-        for item in all_base_cuurencies:
-            currency_list.append(all_base_cuurencies[item].base_currency.name)
-        output_pd = pd.DataFrame(index=currency_list, columns=currency_list)
-        for name, group in historydata_grouped:
-            currency_name = all_base_cuurencies[name].base_currency.name
-            main_currency_arr = group.ask_price.values
-            output_arr = []
-            for name2, group2 in historydata_grouped:
-                tmp_main_currency_arr = main_currency_arr
-                current_currency_arr = group2.ask_price.values
-                if current_currency_arr.size > main_currency_arr.size:
-                    current_currency_arr = np.resize(current_currency_arr, main_currency_arr.shape)
-                if current_currency_arr.size < main_currency_arr.size:
-                    tmp_main_currency_arr = np.resize(main_currency_arr, current_currency_arr.shape)
-                coef = np.corrcoef(tmp_main_currency_arr, current_currency_arr)
-                output_arr.append(coef[0,1])
-            output_pd.loc[currency_name] = output_arr
-        return output_pd
+    def renew(self):
+        self.symbol_selected = self.symbol_list.get_selection()
+        self.update()
 
 
-class MyDialog(tk.Frame):
-    def __init__(self, parent, valor, title, labeltext='', list_of_symbol_var=[]):
-        self.valor = valor
+class SymbolList(tk.Frame):
 
-        self.top = tk.Toplevel(parent)
-        self.top.transient(parent)
-        self.top.grab_set()
-        if len(title) > 0: self.top.title(title)
-        if len(labeltext) == 0: labeltext = 'Valor'
-        tk.Label(self.top, text=labeltext).pack()
-        self.top.bind("<Return>", self.ok)
-        self.e = tk.Entry(self.top, text=valor.get())
-        self.e.bind("<Return>", self.ok)
-        self.e.bind("<Escape>", self.cancel)
-        self.e.pack(padx=15)
-        self.e.focus_set()
-        b = tk.Button(self.top, text="OK", command=self.ok)
-        b.pack(pady=5)
-
-
-
-        # for var in list_of_symbol_vars:
-        #     tk.Checkbutton(self, text="male", variable=var).grid(row=0, sticky=W)
-
-    def ok(self, event=None):
-        print("Has escrito ...", self.e.get())
-        self.valor.set(self.e.get())
-        self.top.destroy()
-
-
-    def cancel(self, event=None):
-        self.top.destroy()
-
-
-class Checkbar(tk.Frame):
-
-    def __init__(self, parent=None, picks=[], side='left', anchor='w'):
+    def __init__(self, parent, symbols):
         tk.Frame.__init__(self, parent)
-        self.vars = []
-        for pick in picks:
-            var = tk.IntVar()
-            chk = tk.Checkbutton(self, text=pick, variable=var)
-            chk.pack(side=side, anchor=anchor, expand='yes')
-            self.vars.append(var)
 
-    def state(self):
-        return map((lambda var: var.get()), self.vars)
+        scrollbar = tk.Scrollbar(self)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        self.listbox = tk.Listbox(self, selectmode=tk.MULTIPLE)
+        self.listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
+
+        self.listbox.config(yscrollcommand=scrollbar.set)
+        scrollbar.config(command=self.listbox.yview)
+
+        # prepare data for listbox
+        self.symbol_dict = dict()
+        for item in symbols:
+            self.symbol_dict[item.symbol_global_id] = item
+
+        for key in self.symbol_dict:
+            self.listbox.insert(tk.END, key)
+
+    def get_selection(self):
+        return_list = list()
+        for key in self.listbox.selection_get().split():
+            return_list.append(self.symbol_dict[key])
+        return return_list

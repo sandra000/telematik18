@@ -3,6 +3,7 @@ import models
 from api.coinapi_v1 import CoinAPIv1
 from datetime import datetime, date, time
 import dateutil.parser
+from sqlalchemy import func
 
 
 class MainImport(object):
@@ -14,17 +15,15 @@ class MainImport(object):
     api = CoinAPIv1(api_key)
 
     def get_symbol(self, symbol_id):
-        #TODO: chagne it to findOne
-        result = self.session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_id).all()
-        if len(result) > 0:
-            return result[0]
+        result = self.session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_id).first()
+        if result:
+            return result
         return -1
 
-    def get_symbol_id(self, symbol_id):
-        #TODO: chagne it to findOne
-        result = self.session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_id).all()
-        if len(result) > 0:
-            return result[0].id
+    def get_symbol_id(self, symbol_id): 
+        result = self.session.query(models.Symbol).filter(models.Symbol.symbol_global_id == symbol_id).first()
+        if result:
+            return result.id
         return -1
 
     def insert_symbol(self, symbol_id, mark_id=-1, base_cryptocurrency_id=-1, quote_cryptocurrency_id=-1):
@@ -35,14 +34,14 @@ class MainImport(object):
             sym.base_cryptocurrency_id = self.get_cryptocurrency_id(base_cryptocurrency_id)
             sym.quote_cryptocurrency_id = self.get_cryptocurrency_id(quote_cryptocurrency_id)
             self.session.add(sym)
-            self.session.commit()
+            #self.session.commit() # wird erst am Ende committed
             return True
 
     def get_cryptocurrency_id(self, name_id):
         # TODO: chagne it to findOne
-        result = self.session.query(models.Cryptocurrency).filter(models.Cryptocurrency.name_id.in_([name_id])).all()
-        if len(result) > 0:
-            return result[0].id
+        result = self.session.query(models.Cryptocurrency).filter(models.Cryptocurrency.name_id.in_([name_id])).first()
+        if result:
+            return result.id
         return -1
 
     def insert_cryptocurrency(self, name, name_id):
@@ -53,10 +52,20 @@ class MainImport(object):
             self.session.commit()
             return True
 
+    def insert_paramter(self, period_id,time_start,time_end,limit):
+        cur = models.Parameter()
+        cur.period_id = period_id
+        cur.time_start=time_start
+        cur.time_end=time_end
+        cur.limit=limit
+        self.session.add(cur)
+        self.session.commit()
+        return models.Symbol.symbol_global_id == self.session.query(func.max(models.Parameter.id)).scalar()
+
     def get_market_id_by_name(self, name):
-        result = self.session.query(models.Mark).filter(models.Mark.exchange_global_id == name).all()
-        if len(result) > 0:
-            return result[0].id
+        result = self.session.query(models.Mark).filter(models.Mark.exchange_global_id == name).first()
+        if result:
+            return result.id
         return 0
 
     def insert_market(self, name, api_url, website, id=-1):
@@ -69,7 +78,7 @@ class MainImport(object):
             self.session.commit()
             return True
 
-    def insert_history(self, ohlcv, symbol, base_currency_id, quote_currency_id):
+    def insert_history(self, ohlcv, symbol, base_currency_id, quote_currency_id,parameter):
         #TODO: do this get_cryptocurrency_id only one time id use symbols
         # TODO: flush data for the first
         # now only for BITSTAMP_SPOT_BTC_USD
@@ -85,46 +94,15 @@ class MainImport(object):
         ohlcv_new.base_currency_id = base_currency_id
         ohlcv_new.quote_currency_id = quote_currency_id
         ohlcv_new.symbol_id = symbol
+        #ohlcv_new.parameter_id=parameter
+        #print('P:')
+        #print(parameter)
         #mark_id =
         self.session.add(ohlcv_new)
         self.session.commit()
         return True
 
-    # def insertExchange(self, mark_id, base_cur_id, quote_cur_id, time_exchange, rate):
-    #     ex = models.Exchange(name)
-    #     ex.mark_id = mark_id
-    #     ex.base_cur_id = base_cur_id
-    #     ex.quote_cur_id = quote_cur_id
-    #     ex.time_exchange = time_exchange
-    #     ex.rate = rate
-    #     self.session.add(ex)
-    # #    self.session.commit()
-    # #    return(self.session.query(models.Exchange).filter(models.Exchange.name_id.in_([name_id])).all()[0].id)
-    #
-    # def insertTrade(self, time, price, size, type, base_cur_id, quote_cur_id, market_id):
-    #     tr = models.Trade(name)
-    #     tr.time = time
-    #     tr.price = price
-    #     tr.size = size
-    #     tr.type = type  # das ist immer true, da eigentlich unnötig
-    #     tr.base_cur_id = base_cur_id
-    #     tr.quote_cur_id = quote_cur_id
-    #     tr.market_id = market_id
-    #     self.session.add(tr)
-    # #   self.session.commit()
-    #
-    # def insert_orderbook(self, time, price, size, type, base_cur_id, quote_cur_id, market_id):
-    #     tr = models.Orderbook(name)
-    #     tr.time = time
-    #     tr.price = price
-    #     tr.size = size
-    #     tr.type = type
-    #     tr.base_cur_id = base_cur_id
-    #     tr.quote_cur_id = quote_cur_id
-    #     tr.market_id = market_id
-    #     self.session.add(tr)
-    #self.session.commit()
-
+    
     def update_exchanges(self):
         exchanges = self.api.metadata_list_exchanges()
 
@@ -148,196 +126,41 @@ class MainImport(object):
                 self.insert_symbol(symbol['symbol_id'], symbol['exchange_id'], symbol['asset_id_base'],
                               symbol['asset_id_quote'])
 
-            if (symbol['symbol_type'] == 'FUTURES'):
-                print('Future delivery time: %s' % symbol['future_delivery_time'])
+#            if (symbol['symbol_type'] == 'FUTURES'):
+#                print('Future delivery time: %s' % symbol['future_delivery_time'])
+#
+#            if (symbol['symbol_type'] == 'OPTION'):
+#                print('Option type is call: %s' % symbol['option_type_is_call'])
+#                print('Option strike price: %s' % symbol['option_strike_price'])
+#                print('Option contract unit: %s' % symbol['option_contract_unit'])
+#                print('Option exercise style: %s' % symbol['option_exercise_style'])
+#                print('Option expiration time: %s' % symbol['option_expiration_time'])
+        self.session.commit() #schreibt die Aenderungen in die Datenbank
 
-            if (symbol['symbol_type'] == 'OPTION'):
-                print('Option type is call: %s' % symbol['option_type_is_call'])
-                print('Option strike price: %s' % symbol['option_strike_price'])
-                print('Option contract unit: %s' % symbol['option_contract_unit'])
-                print('Option exercise style: %s' % symbol['option_exercise_style'])
-                print('Option expiration time: %s' % symbol['option_expiration_time'])
-
-    def update_ohcl_histories(self, symbol):
-        start_of_2018 = date(2018, 1, 1).isoformat()
-        date_now = date.today().isoformat()
+    def update_ohcl_histories(self, symbol, period='1DAY',start_time=date(2018, 1, 1).isoformat(),end_time=date.today().isoformat(),limit=10000):
+        #start_of_2018 = date(2018, 1, 1).isoformat()
+        #date_now = date.today().isoformat()
         #marketID = get_market_id_by_name('BITSTAMP')
-
+    
         symbol_from_db = self.get_symbol(symbol)
         symbol_id = symbol_from_db.id
+        parameter=self.insert_paramter(period,start_time,end_time,limit)
         base_currency_id = symbol_from_db.base_cryptocurrency_id
         quote_currency_id = symbol_from_db.quote_cryptocurrency_id
         ohlcv_historical = self.api.ohlcv_historical_data(symbol, {
-            'period_id': '1DAY',
-            'time_start': start_of_2018,
-            'time_end': date_now,
-            'limit': 10000
+            'period_id': period,
+            'time_start': start_time, #start_of_2018,
+            'time_end': end_time,
+            'limit': limit
         })
         for ohlcv in ohlcv_historical:
-            self.insert_history(ohlcv, symbol_id, base_currency_id, quote_currency_id)
+            self.insert_history(ohlcv, symbol_id, base_currency_id, quote_currency_id,parameter)
 
     def update_all_ohcl_histories(self):
-        self.update_OHCL_histories('BITSTAMP_SPOT_BTC_USD')
-        self.update_OHCL_histories('BITSTAMP_SPOT_ETH_USD')
-        self.update_OHCL_histories('BITSTAMP_SPOT_LTC_USD')
-        self.update_OHCL_histories('BITSTAMP_SPOT_XRP_USD')
-        self.update_OHCL_histories('KRAKEN_SPOT_ZEC_USD')
-        self.update_OHCL_histories('KRAKEN_SPOT_BTC_USD')
-        self.update_OHCL_histories('KRAKEN_SPOT_DASH_USD')
-
-        # latest_trades = api.trades_latest_data_all()
-        #
-        # for data in latest_trades:
-        #     sym = GetSymbol(data['symbol_id'])
-        #     insertTrade(data['time_exchange'], data['price'], data['size'], true, sym.base_cryptocurrency_id,
-        #                 sym.quote_cryptocurrency_id, sym.mark_id)
-        # self.session.commit()
-
-    ##latest_trades_doge = api.trades_latest_data_symbol('BITTREX_SPOT_BTC_DOGE')
-    ##
-    ##for data in latest_trades_doge:
-    ##    print('Symbol ID: %s' % data['symbol_id'])
-    ##    print('Time Exchange: %s' % data['time_exchange'])
-    ##    print('Time CoinAPI: %s' % data['time_coinapi'])
-    ##    print('UUID: %s' % data['uuid'])
-    ##    print('Price: %s' % data['price'])
-    ##    print('Size: %s' % data['size'])
-    ##    print('Taker Side: %s' % data['taker_side'])
-    ##
-    ##historical_trades_btc = api.trades_historical_data('BITSTAMP_SPOT_BTC_USD', {'time_start': start_of_2016})
-    ##
-    ##for data in historical_trades_btc:
-    ##    print('Symbol ID: %s' % data['symbol_id'])
-    ##    print('Time Exchange: %s' % data['time_exchange'])
-    ##    print('Time CoinAPI: %s' % data['time_coinapi'])
-    ##    print('UUID: %s' % data['uuid'])
-    ##    print('Price: %s' % data['price'])
-    ##    print('Size: %s' % data['size'])
-    ##    print('Taker Side: %s' % data['taker_side'])
-    ##
-    ##current_quotes = api.quotes_current_data_all()
-    ##print(current_quotes)
-    ##for quote in current_quotes:
-    ##    print('Symbol ID: %s' % quote['symbol_id'])
-    ##    print('Time Exchange: %s' % quote['time_exchange'])
-    ##    print('Time CoinAPI: %s' % quote['time_coinapi'])
-    ##    print('Ask Price: %s' % quote['ask_price'])
-    ##    print('Ask Size: %s' % quote['ask_size'])
-    ##    print('Bid Price: %s' % quote['bid_price'])
-    ##    print('Bid Size: %s' % quote['bid_size'])
-    ##    if 'last_trade' in quote:
-    ##        print('Last Trade: %s' % quote['last_trade'])
-    ##
-    ##current_quote_btc_usd = api.quotes_current_data_symbol('BITSTAMP_SPOT_BTC_USD')
-    ##
-    ##print('Symbol ID: %s' % current_quote_btc_usd['symbol_id'])
-    ##print('Time Exchange: %s' % current_quote_btc_usd['time_exchange'])
-    ##print('Time CoinAPI: %s' % current_quote_btc_usd['time_coinapi'])
-    ##print('Ask Price: %s' % current_quote_btc_usd['ask_price'])
-    ##print('Ask Size: %s' % current_quote_btc_usd['ask_size'])
-    ##print('Bid Price: %s' % current_quote_btc_usd['bid_price'])
-    ##print('Bid Size: %s' % current_quote_btc_usd['bid_size'])
-    ##if 'last_trade' in current_quote_btc_usd:
-    ##    last_trade = current_quote_btc_usd['last_trade']
-    ##    print('Last Trade:')
-    ##    print('- Taker Side: %s' % last_trade['taker_side'])
-    ##    print('- UUID: %s' % last_trade['uuid'])
-    ##    print('- Time Exchange: %s' % last_trade['time_exchange'])
-    ##    print('- Price: %s' % last_trade['price'])
-    ##    print('- Size: %s' % last_trade['size'])
-    ##    print('- Time CoinAPI: %s' % last_trade['time_coinapi'])
-    ##
-    ##quotes_latest_data = api.quotes_latest_data_all()
-    ##
-    ##for quote in quotes_latest_data:
-    ##    print('Symbol ID: %s' % quote['symbol_id'])
-    ##    print('Time Exchange: %s' % quote['time_exchange'])
-    ##    print('Time CoinAPI: %s' % quote['time_coinapi'])
-    ##    print('Ask Price: %s' % quote['ask_price'])
-    ##    print('Ask Size: %s' % quote['ask_size'])
-    ##    print('Bid Price: %s' % quote['bid_price'])
-    ##    print('Bid Size: %s' % quote['bid_size'])
-    ##
-    ##quotes_latest_data_btc_usd = api.quotes_latest_data_symbol('BITSTAMP_SPOT_BTC_USD')
-    ##
-    ##for quote in quotes_latest_data_btc_usd:
-    ##    print('Symbol ID: %s' % quote['symbol_id'])
-    ##    print('Time Exchange: %s' % quote['time_exchange'])
-    ##    print('Time CoinAPI: %s' % quote['time_coinapi'])
-    ##    print('Ask Price: %s' % quote['ask_price'])
-    ##    print('Ask Size: %s' % quote['ask_size'])
-    ##    print('Bid Price: %s' % quote['bid_price'])
-    ##    print('Bid Size: %s' % quote['bid_size'])
-    ##
-    ##quotes_historical_data_btc_usd = api.quotes_historical_data('BITSTAMP_SPOT_BTC_USD', {'time_start': start_of_2016})
-    ##
-    ##for quote in quotes_historical_data_btc_usd:
-    ##    print('Symbol ID: %s' % quote['symbol_id'])
-    ##    print('Time Exchange: %s' % quote['time_exchange'])
-    ##    print('Time CoinAPI: %s' % quote['time_coinapi'])
-    ##    print('Ask Price: %s' % quote['ask_price'])
-    ##    print('Ask Size: %s' % quote['ask_size'])
-    ##    print('Bid Price: %s' % quote['bid_price'])
-    ##    print('Bid Size: %s' % quote['bid_size'])
-    ##
-    ##orderbooks_current_data = api.orderbooks_current_data_all()
-    ##
-    ##for data in orderbooks_current_data:
-    ##    print('Symbol ID: %s' % data['symbol_id'])
-    ##    print('Time Exchange: %s' % data['time_exchange'])
-    ##    print('Time CoinAPI: %s' % data['time_coinapi'])
-    ##    print('Asks:')
-    ##    for ask in data['asks']:
-    ##        print('- Price: %s' % ask['price'])
-    ##        print('- Size: %s' % ask['size'])
-    ##    print('Bids:')
-    ##    for bid in data['bids']:
-    ##        print('- Price: %s' % bid['price'])
-    ##        print('- Size: %s' % bid['size'])
-    ##
-    ##orderbooks_current_data_btc_usd = api.orderbooks_current_data_symbol('BITSTAMP_SPOT_BTC_USD')
-    ##
-    ##print('Symbol ID: %s' % orderbooks_current_data_btc_usd['symbol_id'])
-    ##print('Time Exchange: %s' % orderbooks_current_data_btc_usd['time_exchange'])
-    ##print('Time CoinAPI: %s' % orderbooks_current_data_btc_usd['time_coinapi'])
-    ##print('Asks:')
-    ##for ask in orderbooks_current_data_btc_usd['asks']:
-    ##    print('- Price: %s' % ask['price'])
-    ##    print('- Size: %s' % ask['size'])
-    ##print('Bids:')
-    ##for bid in orderbooks_current_data_btc_usd['bids']:
-    ##    print('- Price: %s' % bid['price'])
-    ##    print('- Size: %s' % bid['size'])
-    ##
-    ##orderbooks_latest_data_btc_usd = api.orderbooks_latest_data('BITSTAMP_SPOT_BTC_USD')
-    ##
-    ##for data in orderbooks_latest_data_btc_usd:
-    ##    print('Symbol ID: %s' % data['symbol_id'])
-    ##    print('Time Exchange: %s' % data['time_exchange'])
-    ##    print('Time CoinAPI: %s' % data['time_coinapi'])
-    ##    print('Asks:')
-    ##    for ask in data['asks']:
-    ##        print('- Price: %s' % ask['price'])
-    ##        print('- Size: %s' % ask['size'])
-    ##    print('Bids:')
-    ##    for bid in data['bids']:
-    ##        print('- Price: %s' % bid['price'])
-    ##        print('- Size: %s' % bid['size'])
-    ##
-    ##orderbooks_historical_data_btc_usd = api.orderbooks_historical_data('BITSTAMP_SPOT_BTC_USD', {'time_start': start_of_2016})
-    ##
-    ##for data in orderbooks_historical_data_btc_usd:
-    ##    print('Symbol ID: %s' % data['symbol_id'])
-    ##    print('Time Exchange: %s' % data['time_exchange'])
-    ##    print('Time CoinAPI: %s' % data['time_coinapi'])
-    ##    print('Asks:')
-    ##    for ask in data['asks']:
-    ##        print('- Price: %s' % ask['price'])
-    ##        print('- Size: %s' % ask['size'])
-    ##    print('Bids:')
-    ##    for bid in data['bids']:
-    ##        print('- Price: %s' % bid['price'])
-    ##        print('- Size: %s' % bid['size'])
-    ##
-    ##twitter_latest_data = api.twitter_latest_data()
-    ##twitter_historical_data = api.twitter_historical_data({'time_start': start_of_2016})
+        self.update_ohcl_histories('BITSTAMP_SPOT_BTC_USD')
+        self.update_ohcl_histories('BITSTAMP_SPOT_ETH_USD')
+        self.update_ohcl_histories('BITSTAMP_SPOT_LTC_USD')
+        self.update_ohcl_histories('BITSTAMP_SPOT_XRP_USD')
+        self.update_ohcl_histories('KRAKEN_SPOT_ZEC_USD')
+        self.update_ohcl_histories('KRAKEN_SPOT_BTC_USD')
+        self.update_ohcl_histories('KRAKEN_SPOT_DASH_USD') 
