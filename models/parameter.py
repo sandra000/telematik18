@@ -11,8 +11,8 @@ class Parameter(Base):
     time_end = Column(String(250), nullable=True)
     limit = Column(String(250), nullable=True)
 
-    def __init__(self, name):
-        self.name = name
+    #def __init__(self, name):
+    #    self.name = name
 
     def __repr__(self):
         return '<Parameter: {}>'.format(self.id)
