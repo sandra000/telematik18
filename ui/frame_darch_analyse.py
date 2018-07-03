@@ -11,7 +11,7 @@ class SymbolSelect(object):
     pass
 
 
-class CorrelationGraphFrame(tk.Frame):
+class DARCHFrame(tk.Frame):
     figureCorelation = plt.figure()
     valor = tk.StringVar()
     test_var = tk.IntVar()
@@ -35,7 +35,7 @@ class CorrelationGraphFrame(tk.Frame):
         self.type = tk.IntVar(self)
         self.type.set(1)
         tk.Radiobutton(self, text="Normalize to bitcoin course", variable=self.type, value=1).grid(row=2, column=11)
-        tk.Radiobutton(self, text="Normalize auto", variable=self.type, command=self.ShowChoice, value=2).grid(row=3, column=11)
+        tk.Radiobutton(self, text="Normalize auto", variable=self.type, value=2).grid(row=3, column=11)
         #).pack(anchor=W)
 
         self.a = self.figureCorelation.add_subplot(111)
@@ -50,17 +50,9 @@ class CorrelationGraphFrame(tk.Frame):
         btn_update_selected = tk.Button(self, text="Update", command=self.renew)
         btn_update_selected.grid(row=4, column=11)
 
-    #TODO: with render the frame call open:  if this first time than call update otherwise do nothing!!!
-    # nee to merge with bracnh from Sandra
-    # def open:
-    #     return True
-
-    def ShowChoice(self):
-        print(self.type.get())
     def update(self):
 
         self.a.cla()  # which clears data but not axes
-        #self.a.clf()  # which clears data and axes
 
         symbol_selected = self.symbol_selected
         bitcoin_name = "BITSTAMP_SPOT_BTC_USD"
@@ -75,23 +67,20 @@ class CorrelationGraphFrame(tk.Frame):
         if history_data.values.size == 0:
             return
 
-        if self.type.get() == 1:
-            self.a.plot(history_data.ask_price.values, color='red', label=bitcoin_name)
+        #self.a.plot(history_data.ask_price.values, color='red', label=bitcoin_name)
+        if len(symbol_selected):
+            for item in symbol_selected:
+                current_history_data = history.get_by_symbol_id(item.id)
+                #current_price_normalise = self.normalise(current_history_data)
+                current_prices = 100 * current_history_data.ask_price.pct_change(12).dropna()
+                self.a.plot(current_prices, label=item.symbol_global_id)
 
-            if len(symbol_selected):
-                base_max_price = history_data.ask_price.max()
-                for item in symbol_selected:
-                    current_history_data = history.get_by_symbol_id(item.id)
-                    current_max_price = current_history_data.ask_price.max()
-                    coefficient_diff = base_max_price / current_max_price
-                    current_price_normalise = current_history_data.ask_price.mul(coefficient_diff).values
-                    self.a.plot(current_price_normalise, label=item.symbol_global_id)
-        else:
-            if len(symbol_selected):
-                for item in symbol_selected:
-                    current_history_data = history.get_by_symbol_id(item.id)
-                    current_price_normalise = self.normalise(current_history_data)
-                    self.a.plot(current_price_normalise, label=item.symbol_global_id)
+                # ar = ARX(ann_inflation, lags=[1, 3, 12])
+                # print(ar.fit().summary()
+                # ar.volatility = ARCH(p=5)
+                # res = ar.fit(update_freq=0, disp='off')
+                # print(res.summary())
+                # fig = res.plot()
 
         self.a.legend()
 

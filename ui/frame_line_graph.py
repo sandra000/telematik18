@@ -7,7 +7,7 @@ from controllers import HistoryController
 import datetime
 from mpl_finance import candlestick_ohlc
 import matplotlib.dates as mdates
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 #Technical analysts can use autocorrelation to see how much of an impact past prices for a security have on
 # its future price
@@ -67,7 +67,7 @@ class OhlcGraphFrame(tk.Frame):
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
-        toolbar = NavigationToolbar2TkAgg(canvas, self)
+        toolbar = NavigationToolbar2Tk(canvas, self)
         toolbar.update()
         canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         return True
