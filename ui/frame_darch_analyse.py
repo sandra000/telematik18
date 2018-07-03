@@ -78,6 +78,7 @@ class DARCHFrame(tk.Frame):
                 current_prices = 100 * current_history_data.ask_price.pct_change(12).dropna()
                 am = arch_model(current_prices)
                 res = am.fit(update_freq=5)
+                # TODO: output this to frame
                 print(res.summary())
                 figure = res.plot()
 
