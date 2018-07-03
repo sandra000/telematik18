@@ -18,6 +18,7 @@ from ui import SymbolDataFrame
 from ui import CorrelationGraphFrame
 from ui import AutocorrelationGraphFrame
 from ui import OhlcGraphFrame
+from ui import DARCHFrameChanging
 from ui import DARCHFrame
 
 session = models.Session()
@@ -504,7 +505,8 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
         menubar.add_cascade(label="Windows", menu=correlation_menu)
 
         darch_menu = tk.Menu(menubar, tearoff=1)
-        darch_menu.add_command(label="DARHC_chart", command=lambda: self.show_frame(DARCHFrame))
+        darch_menu.add_command(label="Price changing mean", command=lambda: self.show_frame(DARCHFrameChanging))
+        darch_menu.add_command(label="Darch volatility", command=lambda: self.show_frame(DARCHFrame))
         menubar.add_cascade(label="DARCH", menu=darch_menu)
 
         data_menu = tk.Menu(menubar, tearoff=1)
@@ -553,7 +555,8 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
             # http://effbot.org/tkinterbook/grid.htm for more grid() options
 
         for F in (HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame,
-                  DARCHFrame, CorrelationGraphFrame, ImportHistoryFrame, AutocorrelationGraphFrame, OhlcGraphFrame):
+                  DARCHFrameChanging, CorrelationGraphFrame, ImportHistoryFrame, AutocorrelationGraphFrame,
+                  DARCHFrame, OhlcGraphFrame):
             frame = F(container, self)  # main page
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")

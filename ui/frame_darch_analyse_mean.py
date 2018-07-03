@@ -5,14 +5,13 @@ from matplotlib import pyplot as plt
 from controllers import HistoryController, SymbolController
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from sklearn import preprocessing
-from arch import arch_model
 
 # naked object
 class SymbolSelect(object):
     pass
 
 
-class DARCHFrame(tk.Frame):
+class DARCHFrameChanging(tk.Frame):
     figureCorelation = plt.figure()
     valor = tk.StringVar()
     test_var = tk.IntVar()
@@ -31,7 +30,7 @@ class DARCHFrame(tk.Frame):
         self.rowconfigure(3, weight=1)
         self.rowconfigure(4, weight=1)
 
-        label = tk.Label(self, text="Darch", font=controller.LARGE_FONT)
+        label = tk.Label(self, text="Corelation graph", font=controller.LARGE_FONT)
         label.grid(row=0, columnspan=12)
         self.type = tk.IntVar(self)
         self.type.set(1)
@@ -67,21 +66,14 @@ class DARCHFrame(tk.Frame):
         history_data = history.get_by_symbol_id(base_symbol.id)
         if history_data.values.size == 0:
             return
-        figure = self.figureCorelation
+
         #self.a.plot(history_data.ask_price.values, color='red', label=bitcoin_name)
         if len(symbol_selected):
             for item in symbol_selected:
-                #TODO: only for one
-                # TODO: change data to be with Datum
                 current_history_data = history.get_by_symbol_id(item.id)
                 #current_price_normalise = self.normalise(current_history_data)
                 current_prices = 100 * current_history_data.ask_price.pct_change(12).dropna()
-                am = arch_model(current_prices)
-                res = am.fit(update_freq=5)
-                print(res.summary())
-                figure = res.plot()
-
-                #self.a.plot(res, color='red', label=bitcoin_name)
+                self.a.plot(current_prices, label=item.symbol_global_id)
 
                 # ar = ARX(ann_inflation, lags=[1, 3, 12])
                 # print(ar.fit().summary()
@@ -92,7 +84,7 @@ class DARCHFrame(tk.Frame):
 
         self.a.legend()
 
-        canvas = FigureCanvasTkAgg(figure, self)
+        canvas = FigureCanvasTkAgg(self.figureCorelation, self)
         canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=11, sticky=(tk.N, tk.S, tk.E, tk.W))
         canvas.draw()
 
