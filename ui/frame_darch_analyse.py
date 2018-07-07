@@ -75,6 +75,8 @@ class DARCHFrame(tk.Frame):
                 # TODO: change data to be with Datum
                 current_history_data = history.get_by_symbol_id(item.id)
                 #current_price_normalise = self.normalise(current_history_data)
+                # dropna() - entfernt die leere Daten
+                # pct_change(12) - wie vie jeder Wert prozentual geändert wurde, von der Mitte und mir dem Schritt 12 gerechnet
                 current_prices = 100 * current_history_data.ask_price.pct_change(12).dropna()
                 am = arch_model(current_prices)
                 res = am.fit(update_freq=5)
