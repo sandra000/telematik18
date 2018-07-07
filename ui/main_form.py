@@ -36,7 +36,7 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         label = tk.Label(self, text="Cryptocurrencies", font=LARGE_FONT)
         label.pack(pady=10, padx=10)
-        label_text = tk.Label(self, text="This program is free to use uner license MIT. "
+        label_text = tk.Label(self, text="This program is free to use under MIT license. "
                                          "This programmed was developed by student of FU Berlin "
                                          "only for research purpose.", font=NORM_FONT)
         label_text.pack(pady=10, padx=10)
