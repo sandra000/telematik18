@@ -2,6 +2,7 @@ import tkinter as tk
 from matplotlib import pyplot as plt
 from controllers import HistoryController
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from ui.components import SymbolList
 
 
 class DARCHFrameChanging(tk.Frame):
@@ -27,11 +28,13 @@ class DARCHFrameChanging(tk.Frame):
         label.grid(row=0, columnspan=12)
 
         self.a = self.figureCorrelation.add_subplot(111)
+        self.canvas = FigureCanvasTkAgg(self.figureCorrelation, self)
+        self.canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=10, sticky=(tk.N, tk.S, tk.E, tk.W))
 
         history = HistoryController.History()
         self.symbol_data = history.get_all_symbol_from_history()
         self.symbol_list = SymbolList(self, self.symbol_data)
-        self.symbol_list.grid(row=1, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.symbol_list.grid(row=1, column=10, rowspan=3, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
         self.symbol_list.config(relief=tk.GROOVE, bd=2)
 
         btn_update_selected = tk.Button(self, text="Update", command=self.renew)
@@ -50,19 +53,17 @@ class DARCHFrameChanging(tk.Frame):
             bitcoin_name = "BITSTAMP_SPOT_BTC_USD"
             bitcoin_symbol = list(filter(lambda x: x.symbol_global_id == bitcoin_name, self.symbol_data))[0]
             history_data = history.get_by_symbol_id(bitcoin_symbol.id)
-            if history_data.values.size == 0:
+            current_prices = 100 * history_data.ask_price.pct_change(12).dropna()
+            if current_prices.size == 0:
                 return
-            self.a.plot(history_data.ask_price.values, color='red', label=bitcoin_name)
+            self.a.plot(current_prices, color='red', label=bitcoin_name)
 
         self.a.legend()
-
-        canvas = FigureCanvasTkAgg(self.figureCorrelation, self)
-        canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=11, sticky=(tk.N, tk.S, tk.E, tk.W))
-        canvas.draw()
+        self.canvas.draw()
 
         toolbar_frame = tk.Frame(master=self)
-        toolbar_frame.grid(row=4, columnspan=11, sticky=tk.W)
-        toolbar = NavigationToolbar2Tk(canvas, toolbar_frame)
+        toolbar_frame.grid(row=4, columnspan=10, sticky=tk.W)
+        toolbar = NavigationToolbar2Tk(self.canvas, toolbar_frame)
         toolbar.update()
         return True
 
@@ -71,30 +72,3 @@ class DARCHFrameChanging(tk.Frame):
         self.update()
 
 
-class SymbolList(tk.Frame):
-
-    def __init__(self, parent, symbols):
-        tk.Frame.__init__(self, parent)
-
-        scrollbar = tk.Scrollbar(self)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-        self.listbox = tk.Listbox(self, selectmode=tk.MULTIPLE)
-        self.listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
-
-        self.listbox.config(yscrollcommand=scrollbar.set)
-        scrollbar.config(command=self.listbox.yview)
-
-        # prepare data for listbox
-        self.symbol_dict = dict()
-        for item in symbols:
-            self.symbol_dict[item.symbol_global_id] = item
-
-        for key in self.symbol_dict:
-            self.listbox.insert(tk.END, key)
-
-    def get_selection(self):
-        return_list = list()
-        for key in self.listbox.selection_get().split():
-            return_list.append(self.symbol_dict[key])
-        return return_list
