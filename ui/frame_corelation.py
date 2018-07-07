@@ -12,6 +12,9 @@ class CorrelationFrame(tk.Frame):
         self.table = pt = Table(self)
         pt.show()
 
+    def on_show(self):
+        self.update()
+
     def update(self):
         df = self.get_correlation()
         tbm = TableModel(dataframe=df)

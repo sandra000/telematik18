@@ -40,6 +40,14 @@ class DARCHFrameChanging(tk.Frame):
         btn_update_selected = tk.Button(self, text="Update", command=self.renew)
         btn_update_selected.grid(row=4, column=11)
 
+    def on_show(self):
+        history = HistoryController.History()
+        self.symbol_data = history.get_all_symbol_from_history()
+        self.symbol_list = SymbolList(self, self.symbol_data)
+        self.symbol_list.grid(row=1, column=10, rowspan=3, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.symbol_list.config(relief=tk.GROOVE, bd=2)
+        self.update()
+
     def update(self):
         self.a.cla()  # which clears data but not axes
         symbol_selected = self.symbol_selected

@@ -32,8 +32,7 @@ class CorrelationGraphFrame(tk.Frame):
         self.type = tk.IntVar(self)
         self.type.set(1)
         tk.Radiobutton(self, text="Normalize to bitcoin course", variable=self.type, value=1).grid(row=2, column=11)
-        tk.Radiobutton(self, text="Normalize auto", variable=self.type, command=self.ShowChoice, value=2).grid(row=3, column=11)
-        #).pack(anchor=W)
+        tk.Radiobutton(self, text="Normalize auto", variable=self.type, value=2).grid(row=3, column=11)
 
         self.a = self.figureCorelation.add_subplot(111)
 
@@ -47,13 +46,14 @@ class CorrelationGraphFrame(tk.Frame):
         btn_update_selected = tk.Button(self, text="Update", command=self.renew)
         btn_update_selected.grid(row=4, column=11)
 
-    #TODO: with render the frame call open:  if this first time than call update otherwise do nothing!!!
-    # nee to merge with bracnh from Sandra
-    # def open:
-    #     return True
+    def on_show(self):
+        history = HistoryController.History()
+        self.symbol_data = history.get_all_symbol_from_history()
+        self.symbol_list = SymbolList(self, self.symbol_data)
+        self.symbol_list.grid(row=1, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.symbol_list.config(relief=tk.GROOVE, bd=2)
+        self.update()
 
-    def ShowChoice(self):
-        print(self.type.get())
     def update(self):
 
         self.a.cla()  # which clears data but not axes
@@ -102,7 +102,8 @@ class CorrelationGraphFrame(tk.Frame):
         toolbar.update()
         return True
 
-    def normalise(self, data):
+    @staticmethod
+    def normalise(data):
         price_max = data.ask_price.max()
         price_min = data.ask_price.min()
         return np.array(list(map(lambda x: (x-price_min)/(price_max-price_min), data.ask_price.values)))
