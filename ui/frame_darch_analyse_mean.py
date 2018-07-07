@@ -5,14 +5,14 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 
 
 class DARCHFrameChanging(tk.Frame):
-    figureCorelation = plt.figure()
+    figureCorrelation = plt.figure()
     valor = tk.StringVar()
     test_var = tk.IntVar()
     symbol_selected = []
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        # set the grid size
+        # Set the grid size
         col = 0
         while col < 12:
             self.columnconfigure(col, weight=1)
@@ -26,7 +26,7 @@ class DARCHFrameChanging(tk.Frame):
         label = tk.Label(self, text="Corelation graph", font=controller.LARGE_FONT)
         label.grid(row=0, columnspan=12)
 
-        self.a = self.figureCorelation.add_subplot(111)
+        self.a = self.figureCorrelation.add_subplot(111)
 
         history = HistoryController.History()
         self.symbol_data = history.get_all_symbol_from_history()
@@ -56,7 +56,7 @@ class DARCHFrameChanging(tk.Frame):
 
         self.a.legend()
 
-        canvas = FigureCanvasTkAgg(self.figureCorelation, self)
+        canvas = FigureCanvasTkAgg(self.figureCorrelation, self)
         canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=11, sticky=(tk.N, tk.S, tk.E, tk.W))
         canvas.draw()
 
