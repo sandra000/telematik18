@@ -1,12 +1,7 @@
 import tkinter as tk
-import matplotlib.animation as animation
-from tkinter import ttk #css for tkinter
+from tkinter import ttk     # widget(Style) for tkinter
 from tkinter import messagebox
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-# FigureCanvasTkAgg allows us to draw matplotlib to a canvas with TkAgg
-# NavigationToolbar2Tk is the small toolbar in every matplotlib graph
 from matplotlib import pyplot as plt
-from ui import FrameLiveCourse
 import models
 import api
 from ui import CorrelationFrame
@@ -22,11 +17,8 @@ from ui import DARCHFrameChanging
 from ui import DARCHFrame
 
 session = models.Session()
-
-### TODO: move to config
-# defining constants
-LARGE_FONT =("Verdana", 12)
-NORM_FONT=("Verdana", 10)
+LARGE_FONT = ("Verdana", 12)
+NORM_FONT = ("Verdana", 10)
 
 def popupmsg(msg):
     popup = tk.Tk() #creates an empty window
@@ -159,12 +151,12 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
 
         # packing each page into frames:
 
-            # with grid, we place the frame in the specified row and column
-            # sticky=W would align the element to the left edge of the cell,
-            # sticky='ew' would stretch the element to west and east (centering and stretching it);
-            # sticky="nsew" stretches the element to the size of the window
-            # if you dont use a row, default is the first unused row in the grid
-            # http://effbot.org/tkinterbook/grid.htm for more grid() options
+        # with grid, we place the frame in the specified row and column
+        # sticky=W would align the element to the left edge of the cell,
+        # sticky='ew' would stretch the element to west and east (centering and stretching it);
+        # sticky="nsew" stretches the element to the size of the window
+        # if you dont use a row, default is the first unused row in the grid
+        # http://effbot.org/tkinterbook/grid.htm for more grid() options
 
         for F in (StartPage, CorrelationFrame, HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame,
                   DARCHFrameChanging, CorrelationGraphFrame, ImportHistoryFrame, AutocorrelationGraphFrame,
@@ -182,4 +174,3 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
         if frame.update:
             frame.update()
         frame.tkraise()
-        # tkraise() raises frame to the front
