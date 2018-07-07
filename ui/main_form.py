@@ -2,9 +2,9 @@ import tkinter as tk
 import matplotlib.animation as animation
 from tkinter import ttk #css for tkinter
 from tkinter import messagebox
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 # FigureCanvasTkAgg allows us to draw matplotlib to a canvas with TkAgg
-# NavigationToolbar2TkAgg is the small toolbar in every matplotlib graph
+# NavigationToolbar2Tk is the small toolbar in every matplotlib graph
 from matplotlib import pyplot as plt
 from ui import FrameLiveCourse
 import models
@@ -16,6 +16,9 @@ from ui import ExchangeDataFrame
 from ui import ImportHistoryFrame
 from ui import SymbolDataFrame
 from ui import CorrelationGraphFrame
+from ui import AutocorrelationGraphFrame
+from ui import OhlcGraphFrame
+from ui import DARCHFrame
 
 session = models.Session()
 
@@ -413,7 +416,7 @@ class BTCe_Page(tk.Frame):
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
         # add matplotlib toolbar (zoom, home, etc)
-        toolbar = NavigationToolbar2TkAgg(canvas, self)
+        toolbar = NavigationToolbar2Tk(canvas, self)
         toolbar.update()
         canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
@@ -495,8 +498,14 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
 
         correlation_menu = tk.Menu(menubar, tearoff=1)
         correlation_menu.add_command(label="Correlation", command=lambda: self.show_frame(CorrelationFrame))
-        correlation_menu.add_command(label="Correaltion graph", command=lambda: self.show_frame(CorrelationGraphFrame))
+        correlation_menu.add_command(label="Correlation chart", command=lambda: self.show_frame(CorrelationGraphFrame))
+        correlation_menu.add_command(label="Autocorrelation chart", command=lambda: self.show_frame(AutocorrelationGraphFrame))
+        correlation_menu.add_command(label="Candlestick chart", command=lambda: self.show_frame(OhlcGraphFrame))
         menubar.add_cascade(label="Windows", menu=correlation_menu)
+
+        darch_menu = tk.Menu(menubar, tearoff=1)
+        darch_menu.add_command(label="DARHC_chart", command=lambda: self.show_frame(DARCHFrame))
+        menubar.add_cascade(label="DARCH", menu=darch_menu)
 
         data_menu = tk.Menu(menubar, tearoff=1)
         data_menu.add_command(label="Markets", command=lambda: self.show_frame(ExchangeDataFrame))
@@ -513,55 +522,6 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
         exchangeChoice.add_command(label="Bitstamp", command=lambda: changeExchange("Bitstamp", "bitstamp"))
         exchangeChoice.add_command(label="Huobi", command=lambda: changeExchange("Huobi", "huobi"))
         menubar.add_cascade(label="Exchange", menu=exchangeChoice)
-
-        # # submenu Data Time Frame Selection
-        # dataTF = tk.Menu(menubar, tearoff=1)
-        # dataTF.add_cascade(label="Tick", command=lambda: changeTimeFrame('tick'))
-        # dataTF.add_cascade(label="1 Day", command=lambda: changeTimeFrame('1d'))
-        # dataTF.add_cascade(label="3 Day", command=lambda: changeTimeFrame('3d'))
-        # dataTF.add_cascade(label="1 Week", command=lambda: changeTimeFrame('7d'))
-        # menubar.add_cascade(label="Data Time Frame", menu=dataTF)
-        #
-        # OHLCI = tk.Menu(menubar, tearoff=1)
-        # OHLCI.add_command(label="Tick", command=lambda: changeTimeFrame('tick'))
-        # OHLCI.add_command(label="1 Minute", command=lambda: changeSampleSize('1Min', 0.0005))
-        # OHLCI.add_command(label="5 Minute", command=lambda: changeSampleSize('5Min', 0.003))
-        # OHLCI.add_command(label="15 Minute", command=lambda: changeSampleSize('15Min', 0.008))
-        # OHLCI.add_command(label="30 Minute", command=lambda: changeSampleSize('30Min', 0.016))
-        # OHLCI.add_command(label="1 Hour", command=lambda: changeSampleSize('1H', 0.032))
-        # OHLCI.add_command(label="3 Hour", command=lambda: changeSampleSize('3H', 0.096))
-        # menubar.add_cascade(label="OHLC Interval", menu=OHLCI)
-        #
-        # topIndi = tk.Menu(menubar, tearoff=1)
-        # topIndi.add_command(label="None", command=lambda: addTopIndicator("none"))
-        # topIndi.add_command(label="RSI", command=lambda: addTopIndicator("rsi"))
-        # topIndi.add_command(label="MACD", command=lambda: addTopIndicator("macd"))
-        # menubar.add_cascade(label="Top Indicator", menu=topIndi)
-        #
-        # mainIndi = tk.Menu(menubar, tearoff=1)
-        # mainIndi.add_command(label="None", command=lambda: addMiddleIndicator("none"))
-        # mainIndi.add_command(label="SMA", command=lambda: addMiddleIndicator("sma"))
-        # mainIndi.add_command(label="EMA", command=lambda: addMiddleIndicator("ema"))
-        # menubar.add_cascade(label="Main Indicator", menu=mainIndi)
-        #
-        # bottomIndi = tk.Menu(menubar, tearoff=1)
-        # bottomIndi.add_command(label="None", command=lambda: addBottomIndicator("none"))
-        # bottomIndi.add_command(label="RSI", command=lambda: addBottomIndicator("rsi"))
-        # bottomIndi.add_command(label="MACD", command=lambda: addBottomIndicator("macd"))
-        # menubar.add_cascade(label="Bottom Indicator", menu=bottomIndi)
-        #
-        # tradeButton = tk.Menu(menubar, tearoff=1)
-        # tradeButton.add_command(label="Manual Trading", command=lambda: popupmsg("Not live yet"))
-        # tradeButton.add_command(label="Automated Trading", command=lambda: popupmsg("Not live yet"))
-        # tradeButton.add_separator()
-        #
-        # tradeButton.add_command(label="Quick Buy", command=lambda: popupmsg("Not live yet"))
-        # tradeButton.add_command(label="Quick Sell", command=lambda: popupmsg("Not live yet"))
-        # tradeButton.add_separator()
-        #
-        # tradeButton.add_command(label="Setup Quick Buy/Sell", command=lambda: popupmsg("Not live yet"))
-        #
-        # menubar.add_cascade(label="Trading", menu=tradeButton)
 
         startStop = tk.Menu(menubar, tearoff=1)
         startStop.add_command(label="Resume", command=lambda: loadChart('start'))
@@ -592,7 +552,8 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
             # if you dont use a row, default is the first unused row in the grid
             # http://effbot.org/tkinterbook/grid.htm for more grid() options
 
-        for F in (HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame, CorrelationGraphFrame, ImportHistoryFrame):
+        for F in (HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame,
+                  DARCHFrame, CorrelationGraphFrame, ImportHistoryFrame, AutocorrelationGraphFrame, OhlcGraphFrame):
             frame = F(container, self)  # main page
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")

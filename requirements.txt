@@ -1,8 +1,12 @@
 numpy
 matplotlib==2.1.2
 Cython
-pandas==0.23.0
+pandas
 sqlalchemy
 certifi
 python-dateutil
 pandastable
+mpl_finance
+scipy
+sklearn
+scikit-learn
