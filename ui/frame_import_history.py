@@ -9,6 +9,18 @@ from api import MainImport
 class ImportHistoryFrame(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        # Set the grid size
+        col = 0
+        while col < 12:
+            self.columnconfigure(col, weight=1)
+            col += 1
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=1)
+        self.rowconfigure(3, weight=1)
+        self.rowconfigure(4, weight=1)
+        self.rowconfigure(5, weight=5)
+
         #df = self.get_exchange()
         #tb_m = TableModel(dataframe=df)
         #table = Table(self, model=tb_m)
@@ -16,7 +28,7 @@ class ImportHistoryFrame(tk.Frame):
         #table.redraw()
         
         w = tk.Label(self, text="Import History")
-        w.pack()
+        w.grid(row=0, columnspan=12)
         #w = tk.Label(self, text="Exchange")
         #w.pack()
         self.exchangeController=Exchange()
@@ -41,19 +53,41 @@ class ImportHistoryFrame(tk.Frame):
     def draw_elements(self):
         #Select Exchange
         self.popupMenu = tk.OptionMenu(self, self.selectedExchange, *self.exchanges,  command=self.change_dropdown_exchange) 
-        self.popupMenu.pack()
+        self.popupMenu.grid(row=1, column=5, columnspan=2, sticky=(tk.N))
         #Select Base Cur
+        w1 = tk.Label(self, text="Base currency")
+        w1.grid(row=2, column=4, sticky=(tk.N, tk.E))
         self.popupMenu2 = tk.OptionMenu(self, self.selectedBaseCur, *self.baseCurs,  command=self.change_dropdown_base_cur)
-        self.popupMenu2.pack()
+        self.popupMenu2.grid(row=2, column=5, sticky=(tk.N, tk.W))
         #Select QuoteCur
+        w2 = tk.Label(self, text="Quote currency")
+        w2.grid(row=2, column=6, sticky=(tk.N, tk.E))
         self.popupMenu3 = tk.OptionMenu(self, self.selectedQuoteCur, *self.quoteCurs,  command=self.change_dropdown_quote_cur)
-        self.popupMenu3.pack()
+        self.popupMenu3.grid(row=2, column=7, sticky=(tk.N, tk.W))
         #Select Period
         self.popupMenu4 = tk.OptionMenu(self, self.selectedPeriod, *self.periods)
-        self.popupMenu4.pack()
+        self.popupMenu4.grid(row=3, column=5, columnspan=2, sticky=(tk.N))
+        #Datum
+        fromDate = tk.StringVar(self)
+        fromDateField = tk.Entry(self, textvariable=fromDate)
+        fromDate.set("01.01.2018")
+        s = fromDate.get()
+
+        toDate = tk.StringVar(self)
+        toDateField = tk.Entry(self, textvariable=toDate)
+        toDate.set("01.06.2018")
+        s = toDate.get()
+
+        w1 = tk.Label(self, text="From date")
+        w1.grid(row=4, column=4, sticky=(tk.N, tk.E))
+        fromDateField.grid(row=4, column=5, sticky=(tk.N, tk.W))
+        w2 = tk.Label(self, text="To date")
+        w2.grid(row=4, column=5, sticky=(tk.N, tk.E))
+        toDateField.grid(row=4, column=6, sticky=(tk.N, tk.W))
+
         #Import-Button
         self.button = tk.Button(self, text="Import", width=10, command=self.start_import)
-        self.button.pack()
+        self.button.grid(row=5, column=5, columnspan=2, sticky=(tk.N))
 
         #print(cal.selection_get())
         
