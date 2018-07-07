@@ -171,6 +171,6 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
 
     def show_frame(self, cont):
         frame = self.frames[cont]
-        if frame.update:
-            frame.update()
+        if "on_show" in dir(frame):
+            frame.on_show()
         frame.tkraise()

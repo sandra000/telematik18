@@ -5,10 +5,7 @@ from matplotlib import pyplot as plt
 from controllers import HistoryController, SymbolController
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from sklearn import preprocessing
-
-# naked object
-class SymbolSelect(object):
-    pass
+from ui.components import SymbolList
 
 
 class CorrelationGraphFrame(tk.Frame):
@@ -35,8 +32,7 @@ class CorrelationGraphFrame(tk.Frame):
         self.type = tk.IntVar(self)
         self.type.set(1)
         tk.Radiobutton(self, text="Normalize to bitcoin course", variable=self.type, value=1).grid(row=2, column=11)
-        tk.Radiobutton(self, text="Normalize auto", variable=self.type, command=self.ShowChoice, value=2).grid(row=3, column=11)
-        #).pack(anchor=W)
+        tk.Radiobutton(self, text="Normalize auto", variable=self.type, value=2).grid(row=3, column=11)
 
         self.a = self.figureCorelation.add_subplot(111)
 
@@ -50,13 +46,14 @@ class CorrelationGraphFrame(tk.Frame):
         btn_update_selected = tk.Button(self, text="Update", command=self.renew)
         btn_update_selected.grid(row=4, column=11)
 
-    #TODO: with render the frame call open:  if this first time than call update otherwise do nothing!!!
-    # nee to merge with bracnh from Sandra
-    # def open:
-    #     return True
+    def on_show(self):
+        history = HistoryController.History()
+        self.symbol_data = history.get_all_symbol_from_history()
+        self.symbol_list = SymbolList(self, self.symbol_data)
+        self.symbol_list.grid(row=1, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.symbol_list.config(relief=tk.GROOVE, bd=2)
+        self.update()
 
-    def ShowChoice(self):
-        print(self.type.get())
     def update(self):
 
         self.a.cla()  # which clears data but not axes
@@ -105,7 +102,8 @@ class CorrelationGraphFrame(tk.Frame):
         toolbar.update()
         return True
 
-    def normalise(self, data):
+    @staticmethod
+    def normalise(data):
         price_max = data.ask_price.max()
         price_min = data.ask_price.min()
         return np.array(list(map(lambda x: (x-price_min)/(price_max-price_min), data.ask_price.values)))
@@ -113,32 +111,3 @@ class CorrelationGraphFrame(tk.Frame):
     def renew(self):
         self.symbol_selected = self.symbol_list.get_selection()
         self.update()
-
-
-class SymbolList(tk.Frame):
-
-    def __init__(self, parent, symbols):
-        tk.Frame.__init__(self, parent)
-
-        scrollbar = tk.Scrollbar(self)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-        self.listbox = tk.Listbox(self, selectmode=tk.MULTIPLE)
-        self.listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=1)
-
-        self.listbox.config(yscrollcommand=scrollbar.set)
-        scrollbar.config(command=self.listbox.yview)
-
-        # prepare data for listbox
-        self.symbol_dict = dict()
-        for item in symbols:
-            self.symbol_dict[item.symbol_global_id] = item
-
-        for key in self.symbol_dict:
-            self.listbox.insert(tk.END, key)
-
-    def get_selection(self):
-        return_list = list()
-        for key in self.listbox.selection_get().split():
-            return_list.append(self.symbol_dict[key])
-        return return_list

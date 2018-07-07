@@ -31,6 +31,8 @@ class OhlcGraphFrame(tk.Frame):
         label.pack(pady=5,padx=5)
         self.a = self.figureOhlcChart.add_subplot(111)
 
+    def on_show(self):
+        self.update()
 
     def update(self):
         # TODO: fix this
