@@ -5,5 +5,5 @@ from ui import MainForm
 
 app = MainForm()
 app.geometry("1280x720")
-app.resizable(width='false', height='false')
+app.resizable(width='false', height='true')
 app.mainloop()

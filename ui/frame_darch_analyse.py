@@ -2,14 +2,9 @@ import tkinter as tk
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
-from controllers import HistoryController, SymbolController
+from controllers import HistoryController
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-from sklearn import preprocessing
 from arch import arch_model
-
-# naked object
-class SymbolSelect(object):
-    pass
 
 
 class DARCHFrame(tk.Frame):
@@ -33,11 +28,6 @@ class DARCHFrame(tk.Frame):
 
         label = tk.Label(self, text="Darch", font=controller.LARGE_FONT)
         label.grid(row=0, columnspan=12)
-        self.type = tk.IntVar(self)
-        self.type.set(1)
-        tk.Radiobutton(self, text="Normalize to bitcoin course", variable=self.type, value=1).grid(row=2, column=11)
-        tk.Radiobutton(self, text="Normalize auto", variable=self.type, value=2).grid(row=3, column=11)
-        #).pack(anchor=W)
 
         self.a = self.figureCorelation.add_subplot(111)
 
@@ -68,13 +58,12 @@ class DARCHFrame(tk.Frame):
         if history_data.values.size == 0:
             return
         figure = self.figureCorelation
-        #self.a.plot(history_data.ask_price.values, color='red', label=bitcoin_name)
         if len(symbol_selected):
             for item in symbol_selected:
-                #TODO: only for one
+                # TODO: only for one
                 # TODO: change data to be with Datum
                 current_history_data = history.get_by_symbol_id(item.id)
-                #current_price_normalise = self.normalise(current_history_data)
+
                 # dropna() - entfernt die leere Daten
                 # pct_change(12) - wie vie jeder Wert prozentual geändert wurde, von der Mitte und mir dem Schritt 12 gerechnet
                 current_prices = 100 * current_history_data.ask_price.pct_change(12).dropna()
@@ -83,7 +72,6 @@ class DARCHFrame(tk.Frame):
                 # TODO: output this to frame
                 print(res.summary())
                 figure = res.plot()
-
                 #self.a.plot(res, color='red', label=bitcoin_name)
 
                 # ar = ARX(ann_inflation, lags=[1, 3, 12])
@@ -104,11 +92,6 @@ class DARCHFrame(tk.Frame):
         toolbar = NavigationToolbar2Tk(canvas, toolbar_frame)
         toolbar.update()
         return True
-
-    def normalise(self, data):
-        price_max = data.ask_price.max()
-        price_min = data.ask_price.min()
-        return np.array(list(map(lambda x: (x-price_min)/(price_max-price_min), data.ask_price.values)))
 
     def renew(self):
         self.symbol_selected = self.symbol_list.get_selection()
