@@ -98,7 +98,7 @@ class MainImport(object):
         ohlcv_new.base_currency_id = base_currency_id
         ohlcv_new.quote_currency_id = quote_currency_id
         ohlcv_new.symbol_id = symbol
-        ohlcv_new.parameter_id=parameter
+        ohlcv_new.parameter_id=parameter.id
         #print('P:')
         #print(parameter)
         #mark_id =
