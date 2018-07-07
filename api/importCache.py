@@ -60,7 +60,11 @@ class MainImport(object):
         cur.limit=limit
         self.session.add(cur)
         self.session.commit()
-        return models.Symbol.symbol_global_id == self.session.query(func.max(models.Parameter.id)).scalar()
+        #return self.session.query(func.max(models.Parameter.id)).scalar()
+        result = self.session.query(models.Parameter).filter(models.Parameter.period_id == period_id).filter(models.Parameter.time_start==time_start).filter(models.Parameter.time_end==time_end).filter(models.Parameter.limit==limit).first()
+        if result:
+            return result
+        return -1
 
     def get_market_id_by_name(self, name):
         result = self.session.query(models.Mark).filter(models.Mark.exchange_global_id == name).first()
@@ -94,7 +98,7 @@ class MainImport(object):
         ohlcv_new.base_currency_id = base_currency_id
         ohlcv_new.quote_currency_id = quote_currency_id
         ohlcv_new.symbol_id = symbol
-        #ohlcv_new.parameter_id=parameter
+        ohlcv_new.parameter_id=parameter.id
         #print('P:')
         #print(parameter)
         #mark_id =
