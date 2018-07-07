@@ -23,7 +23,7 @@ class DARCHFrameChanging(tk.Frame):
         self.rowconfigure(3, weight=1)
         self.rowconfigure(4, weight=1)
 
-        label = tk.Label(self, text="Corelation graph", font=controller.LARGE_FONT)
+        label = tk.Label(self, text="Price changing mean", font=controller.LARGE_FONT)
         label.grid(row=0, columnspan=12)
 
         self.a = self.figureCorrelation.add_subplot(111)
