@@ -8,7 +8,7 @@ from arch import arch_model
 from ui.components import SymbolList
 
 
-class DARCHFrame(tk.Frame):
+class GARCHFrame(tk.Frame):
     figureCorelation = plt.figure()
     valor = tk.StringVar()
     test_var = tk.IntVar()
@@ -27,7 +27,7 @@ class DARCHFrame(tk.Frame):
         self.rowconfigure(3, weight=1)
         self.rowconfigure(4, weight=1)
 
-        label = tk.Label(self, text="Darch", font=controller.LARGE_FONT)
+        label = tk.Label(self, text="Garch", font=controller.LARGE_FONT)
         label.grid(row=0, columnspan=12)
 
         self.a = self.figureCorelation.add_subplot(111)

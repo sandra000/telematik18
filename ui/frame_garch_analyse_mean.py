@@ -5,7 +5,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from ui.components import SymbolList
 
 
-class DARCHFrameChanging(tk.Frame):
+class GARCHFrameChanging(tk.Frame):
     figureCorrelation = plt.figure()
     valor = tk.StringVar()
     test_var = tk.IntVar()
