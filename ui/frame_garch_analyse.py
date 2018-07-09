@@ -6,7 +6,13 @@ from controllers import HistoryController
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from arch import arch_model
 from ui.components import SymbolList
+import datetime as dt
 
+# The values in the columns h.1 are one-step ahead forecast,
+# while values in h.2, ..., h.5 are 2, ..., 5-observation ahead forecasts.
+# The output is aligned so that the Date column is the final data used
+# to generate the forecast, so that h.1 in row 2013-12-31 is the one-step ahead forecast made using data up to
+# and including December 31, 2013.
 
 class GARCHFrame(tk.Frame):
     figureCorelation = plt.figure()
@@ -78,6 +84,11 @@ class GARCHFrame(tk.Frame):
                 current_prices = 100 * current_history_data.ask_price.pct_change(12).dropna()
                 am = arch_model(current_prices)
                 res = am.fit(update_freq=5)
+                forecasts = res.forecast(horizon=5,  method='bootstrap')
+                print(forecasts.variance.tail())
+                # split_date = dt.datetime(2010, 1, 1)
+                # res = am.fit(last_obs=split_date)
+
                 # TODO: output this to frame
                 print(res.summary())
                 figure = res.plot()
