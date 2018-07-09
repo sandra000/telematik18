@@ -21,13 +21,13 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 
 
 
-class OhlcGraphFrame(tk.Frame):
-    figureOhlcChart = plt.figure()
+class LinearRegressionGraphFrame(tk.Frame):
+    figureLinearRegressionChart = plt.figure()
     valor = tk.StringVar()
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="BTC Candlestick Chart", font=controller.LARGE_FONT)
+        label = tk.Label(self, text="Linear Regression Prediction Chart", font=controller.LARGE_FONT)
         label.pack(pady=5,padx=5)
         self.a = self.figureOhlcChart.add_subplot(111)
 
