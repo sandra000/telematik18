@@ -15,6 +15,7 @@ from ui import AutocorrelationGraphFrame
 from ui import OhlcGraphFrame
 from ui import DARCHFrameChanging
 from ui import DARCHFrame
+from ui import LinearRegressionGraphFrame
 
 session = models.Session()
 LARGE_FONT = ("Verdana", 12)
@@ -123,6 +124,7 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
         correlation_menu.add_command(label="Correlation chart", command=lambda: self.show_frame(CorrelationGraphFrame))
         correlation_menu.add_command(label="Autocorrelation chart", command=lambda: self.show_frame(AutocorrelationGraphFrame))
         correlation_menu.add_command(label="Candlestick chart", command=lambda: self.show_frame(OhlcGraphFrame))
+        correlation_menu.add_command(label="Linear Regression Prediction Charts", command=lambda: self.show_frame(LinearRegressionGraphFrame))
         menubar.add_cascade(label="Windows", menu=correlation_menu)
 
         darch_menu = tk.Menu(menubar, tearoff=1)
@@ -160,7 +162,7 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
 
         for F in (StartPage, CorrelationFrame, HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame,
                   DARCHFrameChanging, CorrelationGraphFrame, ImportHistoryFrame, AutocorrelationGraphFrame,
-                  DARCHFrame, OhlcGraphFrame):
+                  DARCHFrame, OhlcGraphFrame, LinearRegressionGraphFrame):
             frame = F(container, self)  # main page
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
