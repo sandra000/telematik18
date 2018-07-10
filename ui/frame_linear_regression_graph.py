@@ -2,12 +2,16 @@ import tkinter as tk
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib import rc
 from pandastable import Table, TableModel
 from controllers import HistoryController
 import datetime
 from mpl_finance import candlestick_ohlc
 import matplotlib.dates as mdates
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+import datetime
+from sklearn.linear_model import LinearRegression
+from sklearn import preprocessing, cross_validation, svm
 
 #Technical analysts can use autocorrelation to see how much of an impact past prices for a security have on
 # its future price
@@ -22,14 +26,25 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 
 
 class LinearRegressionGraphFrame(tk.Frame):
-    figureLinearRegressionChart = plt.figure()
+    figureLinearRegressionChart = plt.figure(figsize=(20, 10))
     valor = tk.StringVar()
+    plt.rc('font', size=6)
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Linear Regression Prediction Chart", font=controller.LARGE_FONT)
+        label = tk.Label(self, text="Linear Regression Price Prediction Charts", font=controller.LARGE_FONT)
         label.pack(pady=5,padx=5)
-        self.a = self.figureOhlcChart.add_subplot(111)
+        self.a1 = self.figureLinearRegressionChart.add_subplot(331)
+        self.a2 = self.figureLinearRegressionChart.add_subplot(332)
+        self.a3 = self.figureLinearRegressionChart.add_subplot(333)
+        self.a4 = self.figureLinearRegressionChart.add_subplot(334)
+        self.a5 = self.figureLinearRegressionChart.add_subplot(335)
+        self.a6 = self.figureLinearRegressionChart.add_subplot(336)
+        self.a7 = self.figureLinearRegressionChart.add_subplot(337)
+        self.a8 = self.figureLinearRegressionChart.add_subplot(338)
+        self.a9 = self.figureLinearRegressionChart.add_subplot(339)
+        plt.subplots_adjust(left=1, bottom=1, right=1.1, top=1.1,
+                        wspace=0.5, hspace=0.5)
 
     def on_show(self):
         self.update()
@@ -37,8 +52,7 @@ class LinearRegressionGraphFrame(tk.Frame):
     def update(self):
         # TODO: fix this
         bitcoin_name = 1
-        etherum_name = 3
-        zcash_name = 17
+
         history = HistoryController.History()  # object for the databank endpoint
         historydata = history.get_all()  # dataframe
         if historydata.values.size == 0:
@@ -48,24 +62,111 @@ class LinearRegressionGraphFrame(tk.Frame):
         df = historydata_grouped.get_group(bitcoin_name)
         df['date'] = df['start_time_exchange'].map(mdates.date2num)
         df = df.loc[df['symbol_id'] == 16]
-        ohlc = df[['date', 'ask_price', 'ask_price_high', 'ask_price_low', 'ask_price_last']]
-        candlestick_ohlc(self.a, ohlc.values, width=.6, colorup='green', colordown='red')
-        self.a.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+        df = df[['ask_price']]
 
-        #moving averages
-        df['ema20'] = df['ask_price_last'].ewm(span=20, adjust=False).mean()
-        df['ema50'] = df['ask_price_last'].ewm(span=50, adjust=False).mean()
 
-        # correct for starting period errors
-        #df = df[df.index > '2015-5-31']
+        accuracies = []
+        predictions = []
 
-        self.a.plot(df['date'], df['ema20'], color='blue', label='Moving Average 20 days')
-        self.a.plot(df['date'], df['ema50'], color='purple', label='Moving Average 50 days')
+        for x in range(1,10):
+            forecast_out = int(x)  # predict x days into future
+            df['Prediction'] = df[['ask_price']].shift(-forecast_out)
+            X = np.array(df.drop(['Prediction'], 1)) #labels for linear regression
+            X = preprocessing.scale(X)
+            X_forecast = X[-forecast_out:]
+            X = X[:-forecast_out]
 
-        self.a.grid(False)
-        self.a.legend()
+            y = np.array(df['Prediction'])
+            y = y[:-forecast_out]
 
-        canvas = FigureCanvasTkAgg(self.figureOhlcChart, self)
+            X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.2)
+
+            # train
+            clf = LinearRegression()
+            clf.fit(X_train, y_train)
+            # test
+            accuracy = clf.score(X_test, y_test)
+            print("accuracy: ", accuracy)
+
+            forecast_prediction = clf.predict(X_forecast)
+            print(forecast_prediction)
+
+            accuracies.append(accuracy)
+            predictions.append(forecast_prediction)
+
+        self.a1.scatter([1], predictions[0], color='green', label="Confidence: " + "{0:.2f}".format(accuracies[0]))
+        self.a1.set_xticks([1])
+        self.a1.set_yticks(predictions[0])
+        self.a1.set_title("1 day forecast")
+
+        self.a2.plot([1,2], predictions[1], color='green', label="Confidence: " + "{0:.2f}".format(accuracies[1]))
+        self.a2.set_xticks([1,2])
+        self.a2.set_yticks(predictions[1])
+        self.a2.set_title("2 days forecast")
+
+        self.a3.plot(list(range(1,4)), predictions[2], color='green', label="Confidence: " + "{0:.2f}".format(accuracies[2]))
+        self.a3.set_xticks(list(range(1,4)))
+        self.a3.set_yticks(predictions[2])
+        self.a3.set_title("3 days forecast")
+
+        self.a4.plot(list(range(1,5)), predictions[3], color='green', label="Confidence: " + "{0:.2f}".format(accuracies[3]))
+        self.a4.set_xticks(list(range(1,5)))
+        self.a4.set_yticks(predictions[3])
+        self.a4.set_title("4 days forecast")
+
+        self.a5.plot(list(range(1,6)), predictions[4], color='green', label="Confidence: " + "{0:.2f}".format(accuracies[4]))
+        self.a5.set_xticks(list(range(1,6)))
+        self.a5.set_yticks(predictions[4])
+        self.a5.set_title("5 days forecast")
+
+        self.a6.plot(list(range(1,7)), predictions[5], color='green', label="Confidence: " + "{0:.2f}".format(accuracies[5]))
+        self.a6.set_xticks(list(range(1,7)))
+        self.a6.set_yticks(predictions[5])
+        self.a6.set_title("6 days forecast")
+
+        self.a7.plot(list(range(1,8)), predictions[6], color='green', label="Confidence: " + "{0:.2f}".format(accuracies[6]))
+        self.a7.set_xticks(list(range(1,8)))
+        self.a7.set_yticks(predictions[6])
+        self.a7.set_title("7 days forecast")
+
+        self.a8.plot(list(range(1,9)), predictions[7], color='green', label="Confidence: " + "{0:.2f}".format(accuracies[7]))
+        self.a8.set_xticks(list(range(1,9)))
+        self.a8.set_yticks(predictions[7])
+        self.a8.set_title("8 days forecast")
+
+        self.a9.plot(list(range(1,10)), predictions[8], color='green', label="Confidence: " + "{0:.2f}".format(accuracies[8]))
+        self.a9.set_xticks(list(range(1,10)))
+        self.a9.set_yticks(predictions[8])
+        self.a9.set_title("9 days forecast")
+
+        self.a1.grid(True)
+        self.a1.legend()
+
+        self.a2.grid(True)
+        self.a2.legend()
+
+        self.a3.grid(True)
+        self.a3.legend()
+
+        self.a4.grid(True)
+        self.a4.legend()
+
+        self.a5.grid(True)
+        self.a5.legend()
+
+        self.a6.grid(True)
+        self.a6.legend()
+
+        self.a7.grid(True)
+        self.a7.legend()
+
+        self.a8.grid(True)
+        self.a8.legend()
+
+        self.a9.grid(True)
+        self.a9.legend()
+
+        canvas = FigureCanvasTkAgg(self.figureLinearRegressionChart, self)
         canvas.draw()
         canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
