@@ -1,4 +1,3 @@
-arch
 numpy
 matplotlib
 Cython
@@ -11,3 +10,4 @@ mpl_finance
 scipy
 sklearn
 scikit-learn
+arch
