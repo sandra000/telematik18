@@ -8,6 +8,10 @@ from arch import arch_model
 from ui.components import SymbolList
 import datetime as dt
 
+
+# GARCH - generalized autoregressive conditional heteroscedasticity
+#  stochastische Modelle zur Zeitreihenanalyse
+
 # The values in the columns h.1 are one-step ahead forecast,
 # while values in h.2, ..., h.5 are 2, ..., 5-observation ahead forecasts.
 # The output is aligned so that the Date column is the final data used
@@ -45,6 +49,10 @@ class GARCHFrame(tk.Frame):
         self.symbol_list.grid(row=1, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
         self.symbol_list.config(relief=tk.GROOVE, bd=2)
 
+        self.forecastOutput = tk.StringVar(self)
+        labelForecast = tk.Label(self, textvariable=self.forecastOutput, font=controller.LARGE_FONT)
+        labelForecast.grid(row=2, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
+
         btn_update_selected = tk.Button(self, text="Update", command=self.renew)
         btn_update_selected.grid(row=4, column=11)
 
@@ -54,6 +62,7 @@ class GARCHFrame(tk.Frame):
         self.symbol_list = SymbolList(self, self.symbol_data)
         self.symbol_list.grid(row=1, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
         self.symbol_list.config(relief=tk.GROOVE, bd=2)
+        self.forecastOutput.set("")
         self.update()
 
     def update(self):
@@ -74,6 +83,7 @@ class GARCHFrame(tk.Frame):
             return
         figure = self.figureCorelation
         if len(symbol_selected):
+            # TODO remove the for loop
             for item in symbol_selected:
                 # TODO: only for one
                 # TODO: change data to be with Datum
@@ -85,7 +95,8 @@ class GARCHFrame(tk.Frame):
                 am = arch_model(current_prices)
                 res = am.fit(update_freq=5)
                 forecasts = res.forecast(horizon=5,  method='bootstrap')
-                print(forecasts.variance.tail())
+                self.forecastOutput.set(forecasts.variance.tail())
+
                 # split_date = dt.datetime(2010, 1, 1)
                 # res = am.fit(last_obs=split_date)
 
