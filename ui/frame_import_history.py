@@ -1,5 +1,6 @@
 import tkinter as tk
 import datetime
+from datetime import datetime
 from pandastable import Table, TableModel
 from controllers import Exchange
 from controllers import Cryptocurrency
@@ -68,15 +69,15 @@ class ImportHistoryFrame(tk.Frame):
         self.popupMenu4 = tk.OptionMenu(self, self.selectedPeriod, *self.periods)
         self.popupMenu4.grid(row=3, column=5, columnspan=2, sticky=(tk.N))
         #Datum
-        fromDate = tk.StringVar(self)
-        fromDateField = tk.Entry(self, textvariable=fromDate)
-        fromDate.set("01.01.2018")
-        s = fromDate.get()
+        self.fromDate = tk.StringVar(self)
+        fromDateField = tk.Entry(self, textvariable=self.fromDate)
+        self.fromDate.set("01.01.2018")
+        #s = fromDate.get()
 
-        toDate = tk.StringVar(self)
-        toDateField = tk.Entry(self, textvariable=toDate)
-        toDate.set("01.06.2018")
-        s = toDate.get()
+        self.toDate = tk.StringVar(self)
+        toDateField = tk.Entry(self, textvariable=self.toDate)
+        self.toDate.set("01.06.2018")
+        #s = toDate.get()
 
         w1 = tk.Label(self, text="From date")
         w1.grid(row=4, column=4, sticky=(tk.N, tk.E))
@@ -104,7 +105,9 @@ class ImportHistoryFrame(tk.Frame):
     def start_import(self):
         #importiert wird ab dem 1.1.2018, maximal jedoch 10000 Einträge
         symbol=self.selectedExchange.get() + "_SPOT_" + self.selectedBaseCur.get() + "_" + self.selectedQuoteCur.get()
-        self.importAPI.update_ohcl_histories(symbol,self.selectedPeriod.get())
+        dateFrom=datetime.strptime(self.fromDate.get(),'%d.%m.%Y').isoformat()
+        dateTo=datetime.strptime(self.toDate.get(),'%d.%m.%Y').isoformat()
+        self.importAPI.update_ohcl_histories(symbol,self.selectedPeriod.get(),dateFrom, dateTo)
         
     def change_dropdown_exchange(self, *args):
         self.get_base_curs()

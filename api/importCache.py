@@ -51,6 +51,11 @@ class MainImport(object):
             self.session.add(cur)
             self.session.commit()
             return True
+    def get_parameter(self, period_id,time_start,time_end,limit):
+        result = self.session.query(models.Parameter).filter(models.Parameter.period_id == period_id).filter(models.Parameter.time_start==time_start).filter(models.Parameter.time_end==time_end).filter(models.Parameter.limit==limit).first()
+        if result:
+            return result
+        return -1
 
     def insert_paramter(self, period_id,time_start,time_end,limit):
         cur = models.Parameter()
@@ -145,10 +150,16 @@ class MainImport(object):
         #start_of_2018 = date(2018, 1, 1).isoformat()
         #date_now = date.today().isoformat()
         #marketID = get_market_id_by_name('BITSTAMP')
-    
+        
         symbol_from_db = self.get_symbol(symbol)
         symbol_id = symbol_from_db.id
-        parameter=self.insert_paramter(period,start_time,end_time,limit)
+        parameter=self.get_parameter(period,start_time,end_time,limit)
+        if (parameter==-1):
+            parameter=self.insert_paramter(period,start_time,end_time,limit)
+        else:
+            self.session.execute('DELETE FROM histories WHERE symbol_id='+str(symbol_id)+' AND parameter_id='+str(parameter.id))
+            self.session.commit()
+            
         base_currency_id = symbol_from_db.base_cryptocurrency_id
         quote_currency_id = symbol_from_db.quote_cryptocurrency_id
         ohlcv_historical = self.api.ohlcv_historical_data(symbol, {
