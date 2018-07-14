@@ -29,6 +29,7 @@ class CorrelationGraphFrame(tk.Frame):
         self.rowconfigure(2, weight=1)
         self.rowconfigure(3, weight=1)
         self.rowconfigure(4, weight=1)
+        self.rowconfigure(5, weight=1)
 
         label = tk.Label(self, text="Correlation graph", font=controller.LARGE_FONT)
         label.grid(row=0, columnspan=12)
@@ -49,9 +50,9 @@ class CorrelationGraphFrame(tk.Frame):
         self.setting_view = SettingView(self)
         self.setting_view.grid(row=1, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
 
-        self.symbol_list = ParameterList(self, self.parameters)
-        self.symbol_list.grid(row=1, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
-        self.symbol_list.config(relief=tk.GROOVE, bd=2)
+        self.parameter_list = ParameterList(self, self.parameters)
+        self.parameter_list.grid(row=1, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.parameter_list.config(relief=tk.GROOVE, bd=2)
 
         self.symbol_list = SymbolList(self, self.symbol_data)
         self.symbol_list.grid(row=2, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
