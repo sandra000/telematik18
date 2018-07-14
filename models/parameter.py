@@ -15,4 +15,4 @@ class Parameter(Base):
     #    self.name = name
 
     def __repr__(self):
-        return '<Parameter: {}>'.format(self.id)
+        return '<Parameter: {}>'.format(self.id) + self.time_start + '-' + self.time_end + " P:" + self.period_id

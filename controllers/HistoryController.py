@@ -32,3 +32,11 @@ class History(object):
         for item in symbol_in_history:
             symbol_list.append(item.symbol)
         return sorted(symbol_list, key=lambda symbol: symbol.symbol_global_id)
+
+    def get_all_parameter_from_history(self):
+        parameter_in_history = self.session.query(models.History).join(models.History.parameter).group_by(
+            models.History.parameter_id).all()
+        parameter_list = list()
+        for item in parameter_in_history:
+            parameter_list.append(item.parameter)
+        return parameter_list

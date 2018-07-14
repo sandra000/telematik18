@@ -3,7 +3,7 @@ import tkinter as tk
 
 class SettingView(tk.Frame):
 
-    def __init__(self, parent, parameter=None, symbol=None):
+    def __init__(self, parent, parameter=None, symbol=None, summary=None):
         tk.Frame.__init__(self, parent)
         if not parameter:
             return
@@ -27,10 +27,14 @@ class SettingView(tk.Frame):
             self.label6.pack(side=tk.LEFT, fill=tk.X)
             self.label7 = tk.Label(self, text="Symbol:" + symbol.symbol_global_id)
             self.label7.pack(side=tk.LEFT, fill=tk.X)
+        if summary:
+            self.label8 = tk.Label(self, text=summary)
+            self.label8.pack(side=tk.LEFT, fill=tk.X)
+
 
     # TODO: Remove duplicate
 
-    def update_view(self, parameter=None, symbol=None):
+    def update_view(self, parameter=None, symbol=None, summary=None):
         self.label1 = tk.Label(self, text="Time space:")
         self.label1.pack(side=tk.LEFT, fill=tk.X)
         self.label2 = tk.Label(self, text=parameter.time_start + "-" + parameter.time_end)
@@ -48,3 +52,6 @@ class SettingView(tk.Frame):
             self.label6.pack(side=tk.LEFT, fill=tk.X)
             self.label7 = tk.Label(self, text="Symbol:" + symbol.symbol_global_id)
             self.label7.pack(side=tk.LEFT, fill=tk.X)
+        if summary:
+            self.label8 = tk.Label(self, text=summary)
+            self.label8.pack(side=tk.LEFT, fill=tk.X)

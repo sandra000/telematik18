@@ -6,6 +6,7 @@ from controllers import HistoryController
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from arch import arch_model
 from ui.components import SymbolList
+from ui.components import SettingView
 import datetime as dt
 
 
@@ -17,6 +18,8 @@ import datetime as dt
 # The output is aligned so that the Date column is the final data used
 # to generate the forecast, so that h.1 in row 2013-12-31 is the one-step ahead forecast made using data up to
 # and including December 31, 2013.
+from ui.components import ParameterList
+
 
 class GARCHFrame(tk.Frame):
     figureCorelation = plt.figure()
@@ -32,8 +35,8 @@ class GARCHFrame(tk.Frame):
             self.columnconfigure(col, weight=1)
             col += 1
         self.rowconfigure(0, weight=1)
-        self.rowconfigure(1, weight=4)
-        self.rowconfigure(2, weight=1)
+        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=2)
         self.rowconfigure(3, weight=1)
         self.rowconfigure(4, weight=1)
 
@@ -45,22 +48,32 @@ class GARCHFrame(tk.Frame):
         history = HistoryController.History()
         self.symbol_data = history.get_all_symbol_from_history()
 
-        self.symbol_list = SymbolList(self, self.symbol_data)
+        history = HistoryController.History()
+        self.parameters = history.get_all_parameter_from_history()
+
+        self.setting_view = SettingView(self)
+        self.setting_view.grid(row=1, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+
+        self.symbol_list = ParameterList(self, self.parameters)
         self.symbol_list.grid(row=1, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.symbol_list.config(relief=tk.GROOVE, bd=2)
+
+        self.symbol_list = SymbolList(self, self.symbol_data)
+        self.symbol_list.grid(row=2, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
         self.symbol_list.config(relief=tk.GROOVE, bd=2)
 
         self.forecastOutput = tk.StringVar(self)
         labelForecast = tk.Label(self, textvariable=self.forecastOutput, font=controller.LARGE_FONT)
-        labelForecast.grid(row=2, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
+        labelForecast.grid(row=3, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
 
         btn_update_selected = tk.Button(self, text="Update", command=self.renew)
-        btn_update_selected.grid(row=4, column=11)
+        btn_update_selected.grid(row=4, column=10, columnspan=2)
 
     def on_show(self):
         history = HistoryController.History()
         self.symbol_data = history.get_all_symbol_from_history()
         self.symbol_list = SymbolList(self, self.symbol_data)
-        self.symbol_list.grid(row=1, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.symbol_list.grid(row=2, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
         self.symbol_list.config(relief=tk.GROOVE, bd=2)
         self.forecastOutput.set("")
         self.update()
@@ -115,11 +128,11 @@ class GARCHFrame(tk.Frame):
         self.a.legend()
 
         canvas = FigureCanvasTkAgg(figure, self)
-        canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=11, sticky=(tk.N, tk.S, tk.E, tk.W))
+        canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=10, sticky=(tk.N, tk.S, tk.E, tk.W))
         canvas.draw()
 
         toolbar_frame = tk.Frame(master=self)
-        toolbar_frame.grid(row=4, columnspan=11, sticky=tk.W)
+        toolbar_frame.grid(row=4, columnspan=10, sticky=tk.W)
         toolbar = NavigationToolbar2Tk(canvas, toolbar_frame)
         toolbar.update()
         return True
