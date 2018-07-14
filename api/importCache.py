@@ -175,6 +175,7 @@ class MainImport(object):
         })
         for ohlcv in ohlcv_historical:
             self.insert_history(ohlcv, symbol_id, base_currency_id, quote_currency_id, parameter)
+        return True
 
     def update_all_ohcl_histories(self):
         self.update_ohcl_histories('BITSTAMP_SPOT_BTC_USD')

@@ -47,8 +47,6 @@ class GARCHFrame(tk.Frame):
 
         history = HistoryController.History()
         self.symbol_data = history.get_all_symbol_from_history()
-
-        history = HistoryController.History()
         self.parameters = history.get_all_parameter_from_history()
 
         self.setting_view = SettingView(self)
@@ -140,3 +138,19 @@ class GARCHFrame(tk.Frame):
     def renew(self):
         self.symbol_selected = self.symbol_list.get_selection()
         self.update()
+
+    def get_data_for_symbol_list(self, evt):
+        # Note here that Tkinter passes an event object to onselect()
+        w = evt.widget
+        index = int(w.curselection()[0])
+        value = w.get(index)
+        print('You selected item %d: "%s"' % (index, value))
+
+        #print(parameter_id)
+        # history = HistoryController.History()
+        # # TODO get data by parameter
+        # self.symbol_data = history.get_all_symbol_from_history()
+        # self.symbol_list = SymbolList(self, self.symbol_data)
+        # self.symbol_list.grid(row=2, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
+        # self.symbol_list.config(relief=tk.GROOVE, bd=2)
+        # self.forecastOutput.set("")
