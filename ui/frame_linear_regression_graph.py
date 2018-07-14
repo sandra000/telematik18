@@ -12,6 +12,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 import datetime
 from sklearn.linear_model import LinearRegression
 from sklearn import preprocessing, cross_validation, svm
+from ui.components import SymbolList
+from ui.components import SettingView
+from ui.components import ParameterList
 
 #Technical analysts can use autocorrelation to see how much of an impact past prices for a security have on
 # its future price
@@ -26,14 +29,24 @@ from sklearn import preprocessing, cross_validation, svm
 
 
 class LinearRegressionGraphFrame(tk.Frame):
-    figureLinearRegressionChart = plt.figure(figsize=(20, 10))
+    figureLinearRegressionChart = plt.figure(figsize=(11, 6))
     valor = tk.StringVar()
     plt.rc('font', size=6)
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
-        label = tk.Label(self, text="Linear Regression Price Prediction Charts", font=controller.LARGE_FONT)
-        label.pack(pady=5,padx=5)
+
+        # set the grid size
+        col = 0
+        while col < 12:
+            self.columnconfigure(col, weight=1)
+            col += 1
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=2)
+        self.rowconfigure(3, weight=1)
+        self.rowconfigure(4, weight=1)
+
         self.a1 = self.figureLinearRegressionChart.add_subplot(331)
         self.a2 = self.figureLinearRegressionChart.add_subplot(332)
         self.a3 = self.figureLinearRegressionChart.add_subplot(333)
@@ -45,6 +58,30 @@ class LinearRegressionGraphFrame(tk.Frame):
         self.a9 = self.figureLinearRegressionChart.add_subplot(339)
         plt.subplots_adjust(left=1, bottom=1, right=1.1, top=1.1,
                         wspace=0.5, hspace=0.5)
+
+
+        label = tk.Label(self, text="Linear Regression Price Prediction Charts", font=controller.LARGE_FONT)
+        label.grid(row=0, columnspan=12)
+
+        history = HistoryController.History()
+        self.symbol_data = history.get_all_symbol_from_history()
+
+        history = HistoryController.History()
+        self.parameters = history.get_all_parameter_from_history()
+
+        self.setting_view = SettingView(self)
+        self.setting_view.grid(row=1, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+
+        self.parameter_list = ParameterList(self, self.parameters)
+        self.parameter_list.grid(row=1, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.parameter_list.config(relief=tk.GROOVE, bd=2)
+
+        self.symbol_list = SymbolList(self, self.symbol_data)
+        self.symbol_list.grid(row=2, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.symbol_list.config(relief=tk.GROOVE, bd=2)
+
+        btn_update_selected = tk.Button(self, text="Update", command=self.renew)
+        btn_update_selected.grid(row=4, column=8, columnspan=4)
 
     def on_show(self):
         self.update()
@@ -86,10 +123,8 @@ class LinearRegressionGraphFrame(tk.Frame):
             clf.fit(X_train, y_train)
             # test
             accuracy = clf.score(X_test, y_test)
-            print("accuracy: ", accuracy)
 
             forecast_prediction = clf.predict(X_forecast)
-            print(forecast_prediction)
 
             accuracies.append(accuracy)
             predictions.append(forecast_prediction)
@@ -166,14 +201,26 @@ class LinearRegressionGraphFrame(tk.Frame):
         self.a9.grid(True)
         self.a9.legend()
 
-        canvas = FigureCanvasTkAgg(self.figureLinearRegressionChart, self)
-        canvas.draw()
-        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 
-        toolbar = NavigationToolbar2Tk(canvas, self)
-        toolbar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        canvas = FigureCanvasTkAgg(self.figureLinearRegressionChart, self)
+        canvas.get_tk_widget().grid(row=1, rowspan=2, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
+        canvas.draw()
+
+
+#        canvas = FigureCanvasTkAgg(self.figureLinearRegressionChart, self)
+#        canvas.draw()
+#        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+
         return True
+
+#        toolbar = NavigationToolbar2Tk(canvas, self)
+#        toolbar.update()
+#        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+#        return True
+
+    def renew(self):
+        self.symbol_selected = self.symbol_list.get_selection()
+        self.update()
 
     def get_correlation(self):
         #TODO: sort the history list
@@ -201,7 +248,7 @@ class LinearRegressionGraphFrame(tk.Frame):
             output_pd.loc[currency_name] = output_arr
         return output_pd
 
-
+'''
 class MyDialog(tk.Frame):
     def __init__(self, parent, valor, title, labeltext='', list_of_symbol_var=[]):
         self.valor = valor
@@ -249,3 +296,4 @@ class Checkbar(tk.Frame):
 
     def state(self):
         return map((lambda var: var.get()), self.vars)
+'''

@@ -6,6 +6,9 @@ from controllers import HistoryController, SymbolController
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from sklearn import preprocessing
 from ui.components import SymbolList
+from ui.components import SettingView
+from ui.components import ParameterList
+
 
 
 class CorrelationGraphFrame(tk.Frame):
@@ -27,7 +30,7 @@ class CorrelationGraphFrame(tk.Frame):
         self.rowconfigure(3, weight=1)
         self.rowconfigure(4, weight=1)
 
-        label = tk.Label(self, text="Corelation graph", font=controller.LARGE_FONT)
+        label = tk.Label(self, text="Correlation graph", font=controller.LARGE_FONT)
         label.grid(row=0, columnspan=12)
         self.type = tk.IntVar(self)
         self.type.set(1)
@@ -36,12 +39,28 @@ class CorrelationGraphFrame(tk.Frame):
 
         self.a = self.figureCorelation.add_subplot(111)
 
+
         history = HistoryController.History()
         self.symbol_data = history.get_all_symbol_from_history()
 
-        self.symbol_list = SymbolList(self, self.symbol_data)
+        history = HistoryController.History()
+        self.parameters = history.get_all_parameter_from_history()
+
+        self.setting_view = SettingView(self)
+        self.setting_view.grid(row=1, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+
+        self.symbol_list = ParameterList(self, self.parameters)
         self.symbol_list.grid(row=1, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
         self.symbol_list.config(relief=tk.GROOVE, bd=2)
+
+        self.symbol_list = SymbolList(self, self.symbol_data)
+        self.symbol_list.grid(row=2, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.symbol_list.config(relief=tk.GROOVE, bd=2)
+
+
+        self.forecastOutput = tk.StringVar(self)
+        labelForecast = tk.Label(self, textvariable=self.forecastOutput, font=controller.LARGE_FONT)
+        labelForecast.grid(row=3, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
 
         btn_update_selected = tk.Button(self, text="Update", command=self.renew)
         btn_update_selected.grid(row=4, column=11)

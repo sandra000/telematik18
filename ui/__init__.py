@@ -1,4 +1,4 @@
-from .frame_corelation import CorrelationFrame
+from .frame_corelation_table import CorrelationFrame
 from .frame_history_data import HistoryDataFrame
 from .frame_currencies_data import CryptocurrencyDataFrame
 from .frame_market_data import ExchangeDataFrame

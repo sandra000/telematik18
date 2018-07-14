@@ -7,6 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from arch import arch_model
 from ui.components import SymbolList
 from ui.components import SettingView
+from ui.components import ParameterList
 import datetime as dt
 
 
@@ -18,7 +19,7 @@ import datetime as dt
 # The output is aligned so that the Date column is the final data used
 # to generate the forecast, so that h.1 in row 2013-12-31 is the one-step ahead forecast made using data up to
 # and including December 31, 2013.
-from ui.components import ParameterList
+
 
 
 class GARCHFrame(tk.Frame):
