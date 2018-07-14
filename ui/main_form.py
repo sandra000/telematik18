@@ -7,6 +7,7 @@ import api
 from ui import CorrelationFrame
 from ui import HistoryDataFrame
 from ui import CryptocurrencyDataFrame
+from ui import NeuronalesNetzFrame
 from ui import ExchangeDataFrame
 from ui import ImportHistoryFrame
 from ui import SymbolDataFrame
@@ -135,6 +136,7 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
         data_menu.add_command(label="Currencies", command=lambda: self.show_frame(CryptocurrencyDataFrame))
         data_menu.add_command(label="Symbols", command=lambda: self.show_frame(SymbolDataFrame))
         data_menu.add_command(label="History", command=lambda: self.show_frame(HistoryDataFrame))
+        data_menu.add_command(label="Neuronales Netz", command=lambda: self.show_frame(NeuronalesNetzFrame))
         menubar.add_cascade(label="Show data", menu=data_menu)
 
         helpmenu = tk.Menu(menubar, tearoff=0)
@@ -158,7 +160,7 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
         # if you dont use a row, default is the first unused row in the grid
         # http://effbot.org/tkinterbook/grid.htm for more grid() options
 
-        for F in (StartPage, CorrelationFrame, HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame,
+        for F in (StartPage, CorrelationFrame, HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame,NeuronalesNetzFrame,
                   DARCHFrameChanging, CorrelationGraphFrame, ImportHistoryFrame, AutocorrelationGraphFrame,
                   DARCHFrame, OhlcGraphFrame):
             frame = F(container, self)  # main page
