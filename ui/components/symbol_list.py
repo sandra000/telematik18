@@ -17,14 +17,18 @@ class SymbolList(tk.Frame):
 
         # prepare data for listbox
         self.symbol_dict = dict()
-        for item in symbols:
-            self.symbol_dict[item.symbol_global_id] = item
-
-        for key in self.symbol_dict:
-            self.listbox.insert(tk.END, key)
+        self.update_list(symbols)
 
     def get_selection(self):
         return_list = list()
         for key in self.listbox.selection_get().split():
             return_list.append(self.symbol_dict[key])
         return return_list
+
+    def update_list(self, symbols):
+        self.symbol_dict = dict()
+        for item in symbols:
+            self.symbol_dict[item.symbol_global_id] = item
+
+        for key in self.symbol_dict:
+            self.listbox.insert(tk.END, key)
