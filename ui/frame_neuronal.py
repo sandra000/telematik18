@@ -1,9 +1,12 @@
 import tkinter as tk
 from matplotlib import pyplot as plt
+import numpy as np
 from controllers import HistoryController
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from ui.components import SymbolList
 from sklearn import svm
+from sklearn import neural_network
+
 
 class NeuronalesNetzFrame(tk.Frame):
     figureCorrelation = plt.figure()
@@ -56,34 +59,40 @@ class NeuronalesNetzFrame(tk.Frame):
 
 
     def train_neuralNet(self, data, trainlength):# returns trained neural network
-        maxID=len(data)-trainlength-1
+        maxID=len(data)-trainlength-1-1
         inValues=[]
         outValues=[]
         for i in range(maxID):
             Values=[]
             for j in range(trainlength):
-                Values.append(data(i+j))
+                #Values.append(float(data[i+j+1]/data[i+j]))
+                Values.append(float(data[i+j+1]))
             inValues.append(Values)
-            outValues.append(data(i+trainlength+1))
+            #outValues.append(int(data[i+trainlength+2]/data[trainlength+1]*1000000+0.5))
+            outValues.append(int(data[i+trainlength+2]*1000+0.5))
         neuralNet=svm.SVC()
+        #neuralNet=svm.SVR()
+
         neuralNet.fit(inValues,outValues)
         return neuralNet
     
     def predictNeural(self,neuralNet,data,trainlength):
-        maxID=len(data)-trainlength
+        maxID=len(data)-trainlength-1
         inValues=[]
         for i in range(maxID):
             Values=[]
             for j in range(trainlength):
-                Values.append(data(i+j))
+                #Values.append(float(data[i+j+1]/data[i+j]))
+                Values.append(float(data[i+j+1]))
             inValues.append(Values)
-        outValues=clf.predict(inValues)
+        outValues=neuralNet.predict(inValues)
         result=[]
-        for i in range(trainlength):
-            #result.append(data(i))
+        for i in range(trainlength+1):
+            #result.append(data[i]/1000.)
             result.append(0)
         for i in range(len(outValues)):
-            result.append(outValues(i))
+            #result.append(outValues[i]/1000000.*data[trainlength+1+i])
+            result.append(outValues[i]/1000.)
         return result
 
     def update(self):
@@ -93,13 +102,13 @@ class NeuronalesNetzFrame(tk.Frame):
         if len(symbol_selected):
             for item in symbol_selected:
                 current_history_data = history.get_by_symbol_id(item.id)
-                current_prices = 100 * current_history_data.ask_price.pct_change(12).dropna()
+                current_prices = current_history_data.ask_price.values#.pct_change(12).dropna()
                 self.a.plot(current_prices, label=item.symbol_global_id)
         else:
             bitcoin_name = "BITSTAMP_SPOT_BTC_USD"
             bitcoin_symbol = list(filter(lambda x: x.symbol_global_id == bitcoin_name, self.symbol_data))[0]
             history_data = history.get_by_symbol_id(bitcoin_symbol.id)
-            current_prices = 100 * history_data.ask_price.pct_change(12).dropna()
+            current_prices = history_data.ask_price.values#pct_change(12).dropna()
             if current_prices.size == 0:
                 return
             self.a.plot(current_prices, color='red', label=bitcoin_name)
@@ -120,39 +129,45 @@ class NeuronalesNetzFrame(tk.Frame):
     def train(self):
         self.symbol_selected = self.symbol_list.get_selection()
         self.update()
-        getData()
-        #self.neuralNet = self.train_neuralNet(getData(),30)
+        self.neuralNet = self.train_neuralNet(self.getData(maxfaktor=0.8),30)
 
     def forecast(self):
-        #self.symbol_selected = self.symbol_list.get_selection()
-        #self.update()
-        ergebnis=self.predictNeural(self.neuralNet,getData(),30)     
-        #self.a.plot(ergebnis, label="Neural Forecast")
-        #self.canvas.draw()
+        self.symbol_selected = self.symbol_list.get_selection()
+        self.update()
+        ergebnis=self.predictNeural(self.neuralNet,self.getData(),30)     
+        self.a.plot(ergebnis, label="Neural Forecast")
+        self.canvas.draw()
 
-    def getData(self):
+    def getData(self, maxLen=-1, maxfaktor=1.):
         symbol_selected = self.symbol_selected
         history = HistoryController.History()
         allData=[]
         if len(symbol_selected):
             for item in symbol_selected:
                 current_history_data = history.get_by_symbol_id(item.id)
-                current_prices = 100 * current_history_data.ask_price.pct_change(12).dropna()
+                current_prices = current_history_data.ask_price.values#pct_change(12).dropna()
                 allData.append(current_prices.tolist())
         else:
             bitcoin_name = "BITSTAMP_SPOT_BTC_USD"
             bitcoin_symbol = list(filter(lambda x: x.symbol_global_id == bitcoin_name, self.symbol_data))[0]
             history_data = history.get_by_symbol_id(bitcoin_symbol.id)
-            current_prices = 100 * history_data.ask_price.pct_change(12).dropna()
+            current_prices = history_data.ask_price.values#pct_change(12).dropna()
             if current_prices.size == 0:
                 return
             allData.append(current_prices.tolist())
         data=[]
         minlen=100000#Abfragen sind immer mit limit 10000, somit wird 100000 nie erreicht
-        for i in range(len(allData)):# Eigentlich sollte man natürlich gleichlange reihen nehmen, sonst ist es irgendwie sinnlos...
+        for i in range(len(allData)):# Eigentlich sollte man natï¿½rlich gleichlange reihen nehmen, sonst ist es irgendwie sinnlos...
             if minlen>len(allData[i]):
                 minlen=len(allData[i])
-        for i in range(len(allData)):
-            for j in range(minlen):
-                data.append(allData[i][len(allData[i])-1-minlen+j])
+        if maxfaktor<1:
+            maxLen=minlen*maxfaktor*len(allData)
+        for i in range(minlen):
+            for j in range(len(allData)):
+                #data.append(int(allData[i][len(allData[i])-1-minlen+j]*1000))
+                data.append(allData[j][len(allData[j])-1-minlen+i])
+                if maxLen>-1:
+                    if len(data)>maxLen:
+                            return data
+                
         return data
