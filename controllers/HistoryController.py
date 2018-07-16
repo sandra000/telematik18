@@ -40,3 +40,11 @@ class History(object):
         for item in parameter_in_history:
             parameter_list.append(item.parameter)
         return parameter_list
+
+    def get_all_symbol_from_history_by_parameter(self, parameter_id):
+        symbol_in_history = self.session.query(models.History).join(models.History.symbol).group_by(
+            models.History.symbol_id).filter(models.History.parameter_id == parameter_id).all()
+        symbol_list = list()
+        for item in symbol_in_history:
+            symbol_list.append(item.symbol)
+        return sorted(symbol_list, key=lambda symbol: symbol.symbol_global_id)
