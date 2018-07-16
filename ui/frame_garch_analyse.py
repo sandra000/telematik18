@@ -26,6 +26,7 @@ class GARCHFrame(tk.Frame):
     valor = tk.StringVar()
     test_var = tk.IntVar()
     symbol_selected = []
+    parameter = None
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -50,7 +51,7 @@ class GARCHFrame(tk.Frame):
         self.parameters = history.get_all_parameter_from_history()
 
         self.setting_view = SettingView(self)
-        self.setting_view.grid(row=1, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.setting_view.grid(row=1, column=10, sticky=(tk.N, tk.E))
 
         self.symbol_list = ParameterList(self, self.parameters)
         self.symbol_list.grid(row=1, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
@@ -61,7 +62,7 @@ class GARCHFrame(tk.Frame):
         self.symbol_list.config(relief=tk.GROOVE, bd=2)
 
         self.forecastOutput = tk.StringVar(self)
-        labelForecast = tk.Label(self, textvariable=self.forecastOutput, font=controller.LARGE_FONT)
+        labelForecast = tk.Label(self, textvariable=self.forecastOutput, font=controller.SMALL_FONT)
         labelForecast.grid(row=3, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
 
         btn_update_selected = tk.Button(self, text="Update", command=self.renew)
@@ -95,6 +96,7 @@ class GARCHFrame(tk.Frame):
         figure = self.figureCorelation
         if len(symbol_selected):
             # TODO remove the for loop
+            self.setting_view.update_view(parameter=self.parameter, symbols=symbol_selected)
             for item in symbol_selected:
                 # TODO: only for one
                 # TODO: change data to be with Datum
@@ -139,18 +141,9 @@ class GARCHFrame(tk.Frame):
         self.symbol_selected = self.symbol_list.get_selection()
         self.update()
 
-    def get_data_for_symbol_list(self, evt):
-        # Note here that Tkinter passes an event object to onselect()
-        w = evt.widget
-        index = int(w.curselection()[0])
-        value = w.get(index)
-        print('You selected item %d: "%s"' % (index, value))
-
-        #print(parameter_id)
-        # history = HistoryController.History()
-        # # TODO get data by parameter
-        # self.symbol_data = history.get_all_symbol_from_history()
-        # self.symbol_list = SymbolList(self, self.symbol_data)
-        # self.symbol_list.grid(row=2, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
-        # self.symbol_list.config(relief=tk.GROOVE, bd=2)
-        # self.forecastOutput.set("")
+    def get_data_for_symbol_list(self, parameter):
+        self.parameter = parameter
+        self.setting_view.update_view(parameter=parameter)
+        history = HistoryController.History()
+        self.symbol_data = history.get_all_symbol_from_history_by_parameter(parameter.id)
+        self.symbol_list.update_list(self.symbol_data)
