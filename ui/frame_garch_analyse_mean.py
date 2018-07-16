@@ -52,9 +52,11 @@ class GARCHFrameChanging(tk.Frame):
         self.a.cla()  # which clears data but not axes
         symbol_selected = self.symbol_selected
         history = HistoryController.History()
+        if not self.parameter:
+            return
         if len(symbol_selected):
             for item in symbol_selected:
-                current_history_data = history.get_by_symbol_id(item.id)
+                current_history_data = history.get_by_symbol_id_and_parameter_id(item.id, self.parameter)
                 current_prices = 100 * current_history_data.ask_price.pct_change(12).dropna()
                 self.a.plot(current_prices, label=item.symbol_global_id)
         else:
