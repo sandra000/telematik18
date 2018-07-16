@@ -24,6 +24,7 @@ class AutocorrelationGraphFrame(tk.Frame):
     valor = tk.StringVar()
     symbol_selected = []
     parameter = None
+    canvas = None
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -43,7 +44,9 @@ class AutocorrelationGraphFrame(tk.Frame):
         label.grid(row=0, columnspan=12)
         self.a = self.figureAutocorrelation.add_subplot(111)
 
-
+        self.canvas = FigureCanvasTkAgg(self.figureAutocorrelation, self)
+        self.canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.canvas.draw()
 
         history = HistoryController.History()
         self.symbol_data = history.get_all_symbol_from_history()
@@ -77,14 +80,17 @@ class AutocorrelationGraphFrame(tk.Frame):
         self.a.cla()  # which clears data but not axes
         symbol_selected = self.symbol_selected
         history = HistoryController.History()
+        if not self.parameter:
+            return
         if len(symbol_selected):
+            self.setting_view.update_view(parameter=self.parameter, symbols=symbol_selected)
             for item in symbol_selected:
-                current_history_data = history.get_by_symbol_id(item.id)
+                current_history_data = history.get_by_symbol_id_and_parameter_id(item.id, self.parameter.id)
                 current_prices = current_history_data.ask_price
                 self.a.acorr(current_prices, label=item.symbol_global_id, usevlines=False)
                 self.a.grid(True)
                 self.a.axhline(0, color='black', lw=2)
-
+        # TODO remove this
         else:
             bitcoin_name = "BITSTAMP_SPOT_BTC_USD"
             bitcoin_symbol = list(filter(lambda x: x.symbol_global_id == bitcoin_name, self.symbol_data))[0]
@@ -95,8 +101,6 @@ class AutocorrelationGraphFrame(tk.Frame):
             self.a.axhline(0, color='black', lw=2)
 
         self.a.legend()
-        self.canvas = FigureCanvasTkAgg(self.figureAutocorrelation, self)
-        self.canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=10, sticky=(tk.N, tk.S, tk.E, tk.W))
         self.canvas.draw()
 
         toolbar_frame = tk.Frame(master=self)
