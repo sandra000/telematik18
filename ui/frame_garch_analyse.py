@@ -20,8 +20,6 @@ import datetime as dt
 # to generate the forecast, so that h.1 in row 2013-12-31 is the one-step ahead forecast made using data up to
 # and including December 31, 2013.
 
-
-
 class GARCHFrame(tk.Frame):
     figureCorelation = plt.figure()
     valor = tk.StringVar()
@@ -54,9 +52,9 @@ class GARCHFrame(tk.Frame):
         self.setting_view = SettingView(self)
         self.setting_view.grid(row=1, column=10, sticky=(tk.N, tk.E))
 
-        self.symbol_list = ParameterList(self, self.parameters)
-        self.symbol_list.grid(row=1, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
-        self.symbol_list.config(relief=tk.GROOVE, bd=2)
+        self.parameter_list = ParameterList(self, self.parameters)
+        self.parameter_list.grid(row=1, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.parameter_list.config(relief=tk.GROOVE, bd=2)
 
         self.symbol_list = SymbolList(self, self.symbol_data)
         self.symbol_list.grid(row=2, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
@@ -79,29 +77,20 @@ class GARCHFrame(tk.Frame):
         self.update()
 
     def update(self):
-
         self.a.cla()  # which clears data but not axes
-
         symbol_selected = self.symbol_selected
-        bitcoin_name = "BITSTAMP_SPOT_BTC_USD"
-
-        # for the first time we will compare all currencies with bitcoin as base currency
-        base_symbol = list(filter(lambda x: x.symbol_global_id == bitcoin_name, self.symbol_data))[0]
 
         history = HistoryController.History()
-
-        # draw base history base currency/symbol data
-        history_data = history.get_by_symbol_id(base_symbol.id)
-        if history_data.values.size == 0:
-            return
         figure = self.figureCorelation
+        if not self.parameter:
+            return
         if len(symbol_selected):
             # TODO remove the for loop
             self.setting_view.update_view(parameter=self.parameter, symbols=symbol_selected)
             for item in symbol_selected:
                 # TODO: only for one
                 # TODO: change data to be with Datum
-                current_history_data = history.get_by_symbol_id(item.id)
+                current_history_data = history.get_by_symbol_id_and_parameter_id(item.id, self.parameter.id)
 
                 # dropna() - entfernt die leere Daten
                 # pct_change(12) - wie vie jeder Wert prozentual geändert wurde, von der Mitte und mir dem Schritt 12 gerechnet
