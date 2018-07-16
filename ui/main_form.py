@@ -124,6 +124,7 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
         correlation_menu.add_command(label="Correlation chart", command=lambda: self.show_frame(CorrelationGraphFrame))
         correlation_menu.add_command(label="Autocorrelation chart", command=lambda: self.show_frame(AutocorrelationGraphFrame))
         correlation_menu.add_command(label="Candlestick chart", command=lambda: self.show_frame(OhlcGraphFrame))
+        correlation_menu.add_command(label="Neuronal Forecast", command=lambda: self.show_frame(NeuronalesNetzFrame))
         menubar.add_cascade(label="Windows", menu=correlation_menu)
 
         darch_menu = tk.Menu(menubar, tearoff=1)
@@ -135,8 +136,7 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
         data_menu.add_command(label="Markets", command=lambda: self.show_frame(ExchangeDataFrame))
         data_menu.add_command(label="Currencies", command=lambda: self.show_frame(CryptocurrencyDataFrame))
         data_menu.add_command(label="Symbols", command=lambda: self.show_frame(SymbolDataFrame))
-        data_menu.add_command(label="History", command=lambda: self.show_frame(HistoryDataFrame))
-        data_menu.add_command(label="Neuronales Netz", command=lambda: self.show_frame(NeuronalesNetzFrame))
+        data_menu.add_command(label="History", command=lambda: self.show_frame(HistoryDataFrame))    
         menubar.add_cascade(label="Show data", menu=data_menu)
 
         helpmenu = tk.Menu(menubar, tearoff=0)
