@@ -44,6 +44,9 @@ class GARCHFrame(tk.Frame):
         label.grid(row=0, columnspan=12)
 
         self.a = self.figureCorelation.add_subplot(111)
+        canvas = FigureCanvasTkAgg(self.figureCorelation, self)
+        canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+        canvas.draw()
 
         history = HistoryController.History()
         self.symbol_data = history.get_all_symbol_from_history()
@@ -62,7 +65,7 @@ class GARCHFrame(tk.Frame):
 
         self.forecastOutput = tk.StringVar(self)
         labelForecast = tk.Label(self, textvariable=self.forecastOutput, font=controller.SMALL_FONT)
-        labelForecast.grid(row=3, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+        labelForecast.grid(row=3, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
 
         btn_update_selected = tk.Button(self, text="Update", command=self.renew)
         btn_update_selected.grid(row=4, column=10, columnspan=2)
@@ -77,11 +80,8 @@ class GARCHFrame(tk.Frame):
         self.update()
 
     def update(self):
-        self.a.cla()  # which clears data but not axes
         symbol_selected = self.symbol_selected
-
         history = HistoryController.History()
-        figure = self.figureCorelation
         if not self.parameter:
             return
         if len(symbol_selected):
@@ -105,7 +105,7 @@ class GARCHFrame(tk.Frame):
 
                 # TODO: output this to frame
                 print(res.summary())
-                figure = res.plot()
+                self.figureCorelation = res.plot()
                 #self.a.plot(res, color='red', label=bitcoin_name)
 
                 # ar = ARX(ann_inflation, lags=[1, 3, 12])
@@ -115,9 +115,7 @@ class GARCHFrame(tk.Frame):
                 # print(res.summary())
                 # fig = res.plot()
 
-        self.a.legend()
-
-        canvas = FigureCanvasTkAgg(figure, self)
+        canvas = FigureCanvasTkAgg(self.figureCorelation, self)
         canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=10, sticky=(tk.N, tk.S, tk.E, tk.W))
         canvas.draw()
 
