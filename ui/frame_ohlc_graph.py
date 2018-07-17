@@ -18,133 +18,110 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 # return as the dependent variable. She finds that returns one day prior have a positive autocorrelation of 0.7, while
 # the returns two days prior have a positive autocorrelation of 0.3. Past returns seem to influence future returns, and
 # she can adjust her portfolio to take advantage of the autocorrelation and resulting momentum.
-
+from ui.components import SettingView, ParameterList, SymbolList
 
 
 class OhlcGraphFrame(tk.Frame):
     figureOhlcChart = plt.figure()
     valor = tk.StringVar()
+    symbol_selected = []
+    parameter = None
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+        col = 0
+        while col < 12:
+            self.columnconfigure(col, weight=1)
+            col += 1
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=2)
+        self.rowconfigure(3, weight=1)
+        self.rowconfigure(4, weight=1)
+
         label = tk.Label(self, text="BTC Candlestick Chart", font=controller.LARGE_FONT)
-        label.pack(pady=5,padx=5)
+        label.grid(row=0, columnspan=12)
+
         self.a = self.figureOhlcChart.add_subplot(111)
+        self.canvas = FigureCanvasTkAgg(self.figureOhlcChart, self)
+        self.canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+
+        history = HistoryController.History()
+        self.symbol_data = history.get_all_symbol_from_history()
+        self.parameters = history.get_all_parameter_from_history()
+
+        self.setting_view = SettingView(self)
+        self.setting_view.grid(row=1, column=10, sticky=(tk.N, tk.E))
+
+        self.parameter_list = ParameterList(self, self.parameters)
+        self.parameter_list.grid(row=1, column=11, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.parameter_list.config(relief=tk.GROOVE, bd=2)
+
+        self.symbol_list = SymbolList(self, self.symbol_data)
+        self.symbol_list.grid(row=2, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.symbol_list.config(relief=tk.GROOVE, bd=2)
+
+        btn_update_selected = tk.Button(self, text="Update", command=self.renew)
+        btn_update_selected.grid(row=4, column=10, columnspan=2)
 
     def on_show(self):
+        history = HistoryController.History()
+        self.symbol_data = history.get_all_symbol_from_history()
+        self.symbol_list = SymbolList(self, self.symbol_data)
+        self.symbol_list.grid(row=2, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.symbol_list.config(relief=tk.GROOVE, bd=2)
         self.update()
 
     def update(self):
-        # TODO: fix this
-        bitcoin_name = 1
-        etherum_name = 3
-        zcash_name = 17
-        history = HistoryController.History()  # object for the databank endpoint
-        historydata = history.get_all()  # dataframe
-        if historydata.values.size == 0:
+        self.a.cla()
+
+        symbol_selected = self.symbol_selected
+        history = HistoryController.History()
+
+        if not self.parameter:
             return
-        historydata_grouped = historydata.groupby('base_currency_id') #symbol_id
 
-        df = historydata_grouped.get_group(bitcoin_name)
-        df['date'] = df['start_time_exchange'].map(mdates.date2num)
-        df = df.loc[df['symbol_id'] == 16]
-        ohlc = df[['date', 'ask_price', 'ask_price_high', 'ask_price_low', 'ask_price_last']]
-        candlestick_ohlc(self.a, ohlc.values, width=.6, colorup='green', colordown='red')
-        self.a.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+        if len(symbol_selected):
+            self.setting_view.update_view(parameter=self.parameter, symbols=symbol_selected)
+            for item in symbol_selected:
 
-        #moving averages
-        df['ema20'] = df['ask_price_last'].ewm(span=20, adjust=False).mean()
-        df['ema50'] = df['ask_price_last'].ewm(span=50, adjust=False).mean()
+                df = history.get_by_symbol_id_and_parameter_id(item.id, self.parameter.id)
+                df['date'] = df['start_time_exchange'].map(mdates.date2num)
 
-        # correct for starting period errors
-        #df = df[df.index > '2015-5-31']
 
-        self.a.plot(df['date'], df['ema20'], color='blue', label='Moving Average 20 days')
-        self.a.plot(df['date'], df['ema50'], color='purple', label='Moving Average 50 days')
 
-        self.a.grid(False)
-        self.a.legend()
+                ohlc = df[['date', 'ask_price', 'ask_price_high', 'ask_price_low', 'ask_price_last']]
+                candlestick_ohlc(self.a, ohlc.values, width=.6, colorup='green', colordown='red')
+                self.a.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
 
-        canvas = FigureCanvasTkAgg(self.figureOhlcChart, self)
-        canvas.draw()
-        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+                #moving averages
+                df['ema20'] = df['ask_price_last'].ewm(span=20, adjust=False).mean()
+                df['ema50'] = df['ask_price_last'].ewm(span=50, adjust=False).mean()
 
-        toolbar = NavigationToolbar2Tk(canvas, self)
+                # correct for starting period errors
+                #df = df[df.index > '2015-5-31']
+
+                self.a.plot(df['date'], df['ema20'], color='blue', label='Moving Average 20 days')
+                self.a.plot(df['date'], df['ema50'], color='purple', label='Moving Average 50 days')
+
+                self.a.grid(False)
+                self.a.legend()
+
+        self.canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+
+        toolbar_frame = tk.Frame(master=self)
+        toolbar_frame.grid(row=4, columnspan=10, sticky=tk.W)
+        toolbar = NavigationToolbar2Tk(self.canvas, toolbar_frame)
         toolbar.update()
-        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         return True
 
-    def get_correlation(self):
-        #TODO: sort the history list
+    def renew(self):
+        self.symbol_selected = self.symbol_list.get_selection()
+        self.update()
+
+    def get_data_for_symbol_list(self, parameter):
+        self.parameter = parameter
+        self.setting_view.update_view(parameter=parameter)
         history = HistoryController.History()
-        historydata = history.get_all()
-        all_base_cuurencies = history.get_all_base_currency_from_history()
-        historydata_grouped = historydata.groupby('base_currency_id')
-        currency_list = []
-        for item in all_base_cuurencies:
-            currency_list.append(all_base_cuurencies[item].base_currency.name)
-        output_pd = pd.DataFrame(index=currency_list, columns=currency_list)
-        for name, group in historydata_grouped:
-            currency_name = all_base_cuurencies[name].base_currency.name
-            main_currency_arr = group.ask_price.values
-            output_arr = []
-            for name2, group2 in historydata_grouped:
-                tmp_main_currency_arr = main_currency_arr
-                current_currency_arr = group2.ask_price.values
-                if current_currency_arr.size > main_currency_arr.size:
-                    current_currency_arr = np.resize(current_currency_arr, main_currency_arr.shape)
-                if current_currency_arr.size < main_currency_arr.size:
-                    tmp_main_currency_arr = np.resize(main_currency_arr, current_currency_arr.shape)
-                coef = np.corrcoef(tmp_main_currency_arr, current_currency_arr)
-                output_arr.append(coef[0,1])
-            output_pd.loc[currency_name] = output_arr
-        return output_pd
-
-
-class MyDialog(tk.Frame):
-    def __init__(self, parent, valor, title, labeltext='', list_of_symbol_var=[]):
-        self.valor = valor
-
-        self.top = tk.Toplevel(parent)
-        self.top.transient(parent)
-        self.top.grab_set()
-        if len(title) > 0: self.top.title(title)
-        if len(labeltext) == 0: labeltext = 'Valor'
-        tk.Label(self.top, text=labeltext).pack()
-        self.top.bind("<Return>", self.ok)
-        self.e = tk.Entry(self.top, text=valor.get())
-        self.e.bind("<Return>", self.ok)
-        self.e.bind("<Escape>", self.cancel)
-        self.e.pack(padx=15)
-        self.e.focus_set()
-        b = tk.Button(self.top, text="OK", command=self.ok)
-        b.pack(pady=5)
-
-
-
-        # for var in list_of_symbol_vars:
-        #     tk.Checkbutton(self, text="male", variable=var).grid(row=0, sticky=W)
-
-    def ok(self, event=None):
-        print("Has escrito ...", self.e.get())
-        self.valor.set(self.e.get())
-        self.top.destroy()
-
-
-    def cancel(self, event=None):
-        self.top.destroy()
-
-
-class Checkbar(tk.Frame):
-
-    def __init__(self, parent=None, picks=[], side='left', anchor='w'):
-        tk.Frame.__init__(self, parent)
-        self.vars = []
-        for pick in picks:
-            var = tk.IntVar()
-            chk = tk.Checkbutton(self, text=pick, variable=var)
-            chk.pack(side=side, anchor=anchor, expand='yes')
-            self.vars.append(var)
-
-    def state(self):
-        return map((lambda var: var.get()), self.vars)
+        self.symbol_data = history.get_all_symbol_from_history_by_parameter(parameter.id)
+        self.symbol_list.update_list(self.symbol_data)
