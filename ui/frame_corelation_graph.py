@@ -39,7 +39,8 @@ class CorrelationGraphFrame(tk.Frame):
         tk.Radiobutton(self, text="Normalize auto", variable=self.type, value=2).grid(row=4, column=11)
 
         self.a = self.figureCorelation.add_subplot(111)
-
+        self.canvas = FigureCanvasTkAgg(self.figureCorelation, self)
+        self.canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=10, sticky=(tk.N, tk.S, tk.E, tk.W))
 
         history = HistoryController.History()
         self.symbol_data = history.get_all_symbol_from_history()
@@ -111,9 +112,7 @@ class CorrelationGraphFrame(tk.Frame):
 
         self.a.legend()
 
-        canvas = FigureCanvasTkAgg(self.figureCorelation, self)
-        canvas.get_tk_widget().grid(row=1, rowspan=3, columnspan=10, sticky=(tk.N, tk.S, tk.E, tk.W))
-        canvas.draw()
+        self.canvas.draw()
 
         toolbar_frame = tk.Frame(master=self)
         toolbar_frame.grid(row=5, columnspan=11, sticky=tk.W)
