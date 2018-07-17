@@ -15,16 +15,19 @@ class SettingView(tk.Frame):
         self.rowconfigure(2, weight=1)
         self.rowconfigure(3, weight=5)
         self.rowconfigure(4, weight=1)
+        self.rowconfigure(5, weight=1)
 
         # scrollbar = tk.Scrollbar(self)
         # scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.label0 = tk.Label(self, text="You see:")
+        self.label0.grid(row=0, column=0, columnspan=2, pady=5, sticky=tk.W)
         self.label1 = tk.Label(self, text="Time space:")
-        self.label1.grid(row=0, column=0, pady=5, sticky=tk.W)
+        self.label1.grid(row=1, column=0, pady=5, sticky=tk.W)
         self.label2 = tk.Label(self, text=parameter.time_start + "-" + parameter.time_end)
-        self.label2.grid(row=0, column=1, pady=5, sticky=tk.W)
+        self.label2.grid(row=2, column=1, pady=5, sticky=tk.W)
 
         self.label3 = tk.Label(self, text="Period:" + parameter.period_id)
-        self.label3.grid(row=1, column=0, columnspan=2, pady=5, sticky=tk.W)
+        self.label3.grid(row=3, column=0, columnspan=2, pady=5, sticky=tk.W)
 
         self.label4 = tk.Label(self, text="From curr.:")
         self.label5 = tk.Label(self, text="To curr.:")
@@ -53,15 +56,17 @@ class SettingView(tk.Frame):
         if hasattr(self, 'label8'):
             self.label8.destroy()
 
+        self.label0 = tk.Label(self, text="You see:")
+        self.label0.grid(row=0, column=0, columnspan=2, pady=5, sticky=tk.W)
         self.label1 = tk.Label(self, text="Time space:")
-        self.label1.grid(row=0, column=0, pady=5, sticky=tk.W)
+        self.label1.grid(row=1, column=0, pady=5, sticky=tk.W)
         self.label2 = tk.Label(self, text=parameter.time_start + "-")
-        self.label2.grid(row=0, column=1, pady=5, sticky=tk.W)
-        self.label2 = tk.Label(self, text=parameter.time_end)
         self.label2.grid(row=1, column=1, pady=5, sticky=tk.W)
+        self.label2 = tk.Label(self, text=parameter.time_end)
+        self.label2.grid(row=2, column=1, pady=5, sticky=tk.W)
 
         self.label3 = tk.Label(self, text="Period:" + parameter.period_id)
-        self.label3.grid(row=2, column=0, columnspan=2, pady=5, sticky=tk.W)
+        self.label3.grid(row=3, column=0, columnspan=2, pady=5, sticky=tk.W)
 
         # labels_groups_wscroll = tk.Frame(self)
         # scrollbar = tk.Scrollbar(labels_groups_wscroll)
@@ -77,10 +82,10 @@ class SettingView(tk.Frame):
                 self.label6.pack(fill=tk.X)
                 self.label7 = tk.Label(labels_groups, text="Symbol:" + symbol.symbol_global_id)
                 self.label7.pack(fill=tk.X)
-        labels_groups.grid(row=3, column=0, columnspan=2, pady=5, sticky=tk.W)
+        labels_groups.grid(row=4, column=0, columnspan=2, pady=5, sticky=tk.W)
         # labels_groups.pack(fill=tk.BOTH)
         # labels_groups.config(yscrollcommand=scrollbar.set)
         # scrollbar.config(command=labels_groups.yview)
         if summary:
             self.label8 = tk.Label(self, text=summary)
-            self.label8.grid(row=4, column=0, columnspan=2, pady=5)
+            self.label8.grid(row=5, column=0, columnspan=2, pady=5)

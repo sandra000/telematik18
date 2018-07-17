@@ -64,8 +64,12 @@ class GARCHFrame(tk.Frame):
         self.symbol_list.config(relief=tk.GROOVE, bd=2)
 
         self.forecastOutput = tk.StringVar(self)
-        labelForecast = tk.Label(self, textvariable=self.forecastOutput, font=controller.SMALL_FONT)
-        labelForecast.grid(row=3, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
+        labels_groups = tk.Frame(self)
+        label = tk.Label(labels_groups, text="Forecasted variance:", font=controller.LARGE_FONT)
+        label.pack(side=tk.TOP)
+        labelForecast = tk.Label(labels_groups, textvariable=self.forecastOutput, font=controller.SMALL_FONT)
+        labelForecast.pack(side=tk.BOTTOM)
+        labels_groups.grid(row=3, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
 
         btn_update_selected = tk.Button(self, text="Update", command=self.renew)
         btn_update_selected.grid(row=4, column=10, columnspan=2)
@@ -95,10 +99,12 @@ class GARCHFrame(tk.Frame):
                 # dropna() - entfernt die leere Daten
                 # pct_change(12) - wie vie jeder Wert prozentual geändert wurde, von der Mitte und mir dem Schritt 12 gerechnet
                 current_prices = 100 * current_history_data.ask_price.pct_change(12).dropna()
-                am = arch_model(current_prices)
+                am = arch_model(current_history_data.ask_price)
                 res = am.fit(update_freq=5)
                 forecasts = res.forecast(horizon=5,  method='bootstrap')
-                self.forecastOutput.set(forecasts.variance.tail())
+                self.forecastOutput.set(np.sqrt(forecasts.variance.tail()))
+                #forecasts.variance['h.1'].tail(n=1).values[0]
+                #self.setting_view.update_view(parameter=self.parameter, symbols=symbol_selected)
 
                 # split_date = dt.datetime(2010, 1, 1)
                 # res = am.fit(last_obs=split_date)
