@@ -14,8 +14,9 @@ from ui import SymbolDataFrame
 from ui import CorrelationGraphFrame
 from ui import AutocorrelationGraphFrame
 from ui import OhlcGraphFrame
-from ui import DARCHFrameChanging
-from ui import DARCHFrame
+from ui import GARCHFrameChanging
+from ui import GARCHFrame
+from ui import LinearRegressionGraphFrame
 
 session = models.Session()
 LARGE_FONT = ("Verdana", 12)
@@ -125,12 +126,13 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
         correlation_menu.add_command(label="Autocorrelation chart", command=lambda: self.show_frame(AutocorrelationGraphFrame))
         correlation_menu.add_command(label="Candlestick chart", command=lambda: self.show_frame(OhlcGraphFrame))
         correlation_menu.add_command(label="Neuronal Forecast", command=lambda: self.show_frame(NeuronalesNetzFrame))
+        correlation_menu.add_command(label="Linear Regression Prediction Charts", command=lambda: self.show_frame(LinearRegressionGraphFrame))
         menubar.add_cascade(label="Windows", menu=correlation_menu)
 
         darch_menu = tk.Menu(menubar, tearoff=1)
-        darch_menu.add_command(label="Price changing mean", command=lambda: self.show_frame(DARCHFrameChanging))
-        darch_menu.add_command(label="Darch volatility", command=lambda: self.show_frame(DARCHFrame))
-        menubar.add_cascade(label="DARCH", menu=darch_menu)
+        darch_menu.add_command(label="Price changing mean", command=lambda: self.show_frame(GARCHFrameChanging))
+        darch_menu.add_command(label="Garch volatility", command=lambda: self.show_frame(GARCHFrame))
+        menubar.add_cascade(label="GARCH", menu=darch_menu)
 
         data_menu = tk.Menu(menubar, tearoff=1)
         data_menu.add_command(label="Markets", command=lambda: self.show_frame(ExchangeDataFrame))
@@ -160,9 +162,10 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
         # if you dont use a row, default is the first unused row in the grid
         # http://effbot.org/tkinterbook/grid.htm for more grid() options
 
-        for F in (StartPage, CorrelationFrame, HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame,NeuronalesNetzFrame,
-                  DARCHFrameChanging, CorrelationGraphFrame, ImportHistoryFrame, AutocorrelationGraphFrame,
-                  DARCHFrame, OhlcGraphFrame):
+        for F in (StartPage, CorrelationFrame, HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame,
+                  GARCHFrameChanging, CorrelationGraphFrame, ImportHistoryFrame, AutocorrelationGraphFrame,
+                  GARCHFrame, OhlcGraphFrame, LinearRegressionGraphFrame):
+
             frame = F(container, self)  # main page
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
