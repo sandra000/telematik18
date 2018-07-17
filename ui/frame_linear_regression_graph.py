@@ -32,9 +32,14 @@ class LinearRegressionGraphFrame(tk.Frame):
     figureLinearRegressionChart = plt.figure(figsize=(11, 6))
     valor = tk.StringVar()
     plt.rc('font', size=6)
+    valor = tk.StringVar()
+    test_var = tk.IntVar()
+    symbol_selected = []
+    parameter = None
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
+
 
         # set the grid size
         col = 0
@@ -58,7 +63,9 @@ class LinearRegressionGraphFrame(tk.Frame):
         self.a9 = self.figureLinearRegressionChart.add_subplot(339)
         plt.subplots_adjust(left=1, bottom=1, right=1.1, top=1.1,
                         wspace=0.5, hspace=0.5)
-
+        self.canvas = FigureCanvasTkAgg(self.figureLinearRegressionChart, self)
+        self.canvas.get_tk_widget().grid(row=1, rowspan=2, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.canvas.draw()
 
         label = tk.Label(self, text="Linear Regression Price Prediction Charts", font=controller.LARGE_FONT)
         label.grid(row=0, columnspan=12)
@@ -80,54 +87,76 @@ class LinearRegressionGraphFrame(tk.Frame):
         self.symbol_list.grid(row=2, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
         self.symbol_list.config(relief=tk.GROOVE, bd=2)
 
+        self.forecastOutput = tk.StringVar(self)
+        labelForecast = tk.Label(self, textvariable=self.forecastOutput, font=controller.SMALL_FONT)
+        labelForecast.grid(row=3, column=10, sticky=(tk.N, tk.S, tk.E, tk.W))
+
         btn_update_selected = tk.Button(self, text="Update", command=self.renew)
         btn_update_selected.grid(row=4, column=8, columnspan=4)
 
     def on_show(self):
+        history = HistoryController.History()
+        self.symbol_data = history.get_all_symbol_from_history()
+        self.symbol_list = SymbolList(self, self.symbol_data)
+        self.symbol_list.grid(row=2, column=10, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
+        self.symbol_list.config(relief=tk.GROOVE, bd=2)
+        self.forecastOutput.set("")
         self.update()
 
     def update(self):
-        # TODO: fix this
-        bitcoin_name = 1
+        self.a1.cla()
+        self.a2.cla()
+        self.a3.cla()
+        self.a4.cla()
+        self.a5.cla()
+        self.a6.cla()
+        self.a7.cla()
+        self.a8.cla()
+        self.a9.cla()
 
-        history = HistoryController.History()  # object for the databank endpoint
-        historydata = history.get_all()  # dataframe
-        if historydata.values.size == 0:
+        symbol_selected = self.symbol_selected
+        history = HistoryController.History()
+
+        if not self.parameter:
             return
-        historydata_grouped = historydata.groupby('base_currency_id') #symbol_id
+        if len(symbol_selected):
+            self.setting_view.update_view(parameter=self.parameter, symbols=symbol_selected)
+            for item in symbol_selected:
+                current_history_data = history.get_by_symbol_id_and_parameter_id(item.id, self.parameter.id)
+                #print(current_history_data)
+                #df = current_history_data.get_group(bitcoin_name)
+                df = current_history_data
+                #print(df)
+                df['date'] = df['start_time_exchange'].map(mdates.date2num)
+                #df = df.loc[df['symbol_id'] == item.id]
+                df = df[['ask_price']]
 
-        df = historydata_grouped.get_group(bitcoin_name)
-        df['date'] = df['start_time_exchange'].map(mdates.date2num)
-        df = df.loc[df['symbol_id'] == 16]
-        df = df[['ask_price']]
+                accuracies = []
+                predictions = []
 
+                for x in range(1, 10):
+                    forecast_out = int(x)  # predict x days into future
+                    df['Prediction'] = df[['ask_price']].shift(-forecast_out)
+                    X = np.array(df.drop(['Prediction'], 1))  # labels for linear regression
+                    X = preprocessing.scale(X)
+                    X_forecast = X[-forecast_out:]
+                    X = X[:-forecast_out]
 
-        accuracies = []
-        predictions = []
+                    y = np.array(df['Prediction'])
+                    y = y[:-forecast_out]
 
-        for x in range(1,10):
-            forecast_out = int(x)  # predict x days into future
-            df['Prediction'] = df[['ask_price']].shift(-forecast_out)
-            X = np.array(df.drop(['Prediction'], 1)) #labels for linear regression
-            X = preprocessing.scale(X)
-            X_forecast = X[-forecast_out:]
-            X = X[:-forecast_out]
+                    X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.2)
 
-            y = np.array(df['Prediction'])
-            y = y[:-forecast_out]
+                    # train
+                    clf = LinearRegression()
+                    clf.fit(X_train, y_train)
+                    # test
+                    accuracy = clf.score(X_test, y_test)
 
-            X_train, X_test, y_train, y_test = cross_validation.train_test_split(X, y, test_size=0.2)
+                    forecast_prediction = clf.predict(X_forecast)
 
-            # train
-            clf = LinearRegression()
-            clf.fit(X_train, y_train)
-            # test
-            accuracy = clf.score(X_test, y_test)
-
-            forecast_prediction = clf.predict(X_forecast)
-
-            accuracies.append(accuracy)
-            predictions.append(forecast_prediction)
+                    accuracies.append(accuracy)
+                    predictions.append(forecast_prediction)
 
         self.a1.scatter([1], predictions[0], color='green', label="Confidence: " + "{0:.2f}".format(accuracies[0]))
         self.a1.set_xticks([1])
@@ -202,21 +231,9 @@ class LinearRegressionGraphFrame(tk.Frame):
         self.a9.legend()
 
 
-        canvas = FigureCanvasTkAgg(self.figureLinearRegressionChart, self)
-        canvas.get_tk_widget().grid(row=1, rowspan=2, columnspan=2, sticky=(tk.N, tk.S, tk.E, tk.W))
-        canvas.draw()
-
-
-#        canvas = FigureCanvasTkAgg(self.figureLinearRegressionChart, self)
-#        canvas.draw()
-#        canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        self.canvas.draw()
 
         return True
-
-#        toolbar = NavigationToolbar2Tk(canvas, self)
-#        toolbar.update()
-#        canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-#        return True
 
     def renew(self):
         self.symbol_selected = self.symbol_list.get_selection()
@@ -248,52 +265,9 @@ class LinearRegressionGraphFrame(tk.Frame):
             output_pd.loc[currency_name] = output_arr
         return output_pd
 
-'''
-class MyDialog(tk.Frame):
-    def __init__(self, parent, valor, title, labeltext='', list_of_symbol_var=[]):
-        self.valor = valor
-
-        self.top = tk.Toplevel(parent)
-        self.top.transient(parent)
-        self.top.grab_set()
-        if len(title) > 0: self.top.title(title)
-        if len(labeltext) == 0: labeltext = 'Valor'
-        tk.Label(self.top, text=labeltext).pack()
-        self.top.bind("<Return>", self.ok)
-        self.e = tk.Entry(self.top, text=valor.get())
-        self.e.bind("<Return>", self.ok)
-        self.e.bind("<Escape>", self.cancel)
-        self.e.pack(padx=15)
-        self.e.focus_set()
-        b = tk.Button(self.top, text="OK", command=self.ok)
-        b.pack(pady=5)
-
-
-
-        # for var in list_of_symbol_vars:
-        #     tk.Checkbutton(self, text="male", variable=var).grid(row=0, sticky=W)
-
-    def ok(self, event=None):
-        print("Has escrito ...", self.e.get())
-        self.valor.set(self.e.get())
-        self.top.destroy()
-
-
-    def cancel(self, event=None):
-        self.top.destroy()
-
-
-class Checkbar(tk.Frame):
-
-    def __init__(self, parent=None, picks=[], side='left', anchor='w'):
-        tk.Frame.__init__(self, parent)
-        self.vars = []
-        for pick in picks:
-            var = tk.IntVar()
-            chk = tk.Checkbutton(self, text=pick, variable=var)
-            chk.pack(side=side, anchor=anchor, expand='yes')
-            self.vars.append(var)
-
-    def state(self):
-        return map((lambda var: var.get()), self.vars)
-'''
+    def get_data_for_symbol_list(self, parameter):
+        self.parameter = parameter
+        self.setting_view.update_view(parameter=parameter)
+        history = HistoryController.History()
+        self.symbol_data = history.get_all_symbol_from_history_by_parameter(parameter.id)
+        self.symbol_list.update_list(self.symbol_data)
