@@ -164,7 +164,7 @@ class MainForm(tk.Tk):  # MainForm is the main class. It inherits from tk.Tk
 
         for F in (StartPage, CorrelationFrame, HistoryDataFrame, CryptocurrencyDataFrame, ExchangeDataFrame, SymbolDataFrame,
                   GARCHFrameChanging, CorrelationGraphFrame, ImportHistoryFrame, AutocorrelationGraphFrame,
-                  GARCHFrame, OhlcGraphFrame, LinearRegressionGraphFrame,NeuronalesNetzFrame):
+                  GARCHFrame, OhlcGraphFrame, LinearRegressionGraphFrame, NeuronalesNetzFrame):
 
             frame = F(container, self)  # main page
             self.frames[F] = frame
