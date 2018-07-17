@@ -14,6 +14,11 @@ class History(object):
         query = self.session.query(models.History).join(models.History.base_currency)
         return pd.read_sql(query.statement, self.session.bind)
 
+    def get_all_by_parameter_id(self, parameter_id):
+        query = self.session.query(models.History).join(models.History.base_currency)\
+            .filter(models.History.parameter_id == parameter_id)
+        return pd.read_sql(query.statement, self.session.bind)
+
     def get_by_symbol_id(self, symbol_id):
         query = self.session.query(models.History).filter(models.History.symbol_id == symbol_id)
         return pd.read_sql(query.statement, self.session.bind)
@@ -25,6 +30,14 @@ class History(object):
 
     def get_all_base_currency_from_history(self):
         base_currencies = self.session.query(models.History).group_by(models.History.base_currency_id).all()
+        currency_dict = dict()
+        for item in base_currencies:
+            currency_dict[item.base_currency_id] = item
+        return currency_dict
+
+    def get_all_base_currency_from_history_by_paramter(self, parameter_id):
+        base_currencies = self.session.query(models.History).group_by(models.History.base_currency_id)\
+            .filter(models.History.parameter_id == parameter_id).all()
         currency_dict = dict()
         for item in base_currencies:
             currency_dict[item.base_currency_id] = item
