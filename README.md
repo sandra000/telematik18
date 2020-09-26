@@ -17,3 +17,4 @@ run main.py
 
 ## For Python 3.7
 pip3 install https://github.com/scikit-learn/scikit-learn/archive/master.zip
+test
